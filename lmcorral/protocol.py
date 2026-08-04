@@ -15,11 +15,10 @@ test harness and a circuit breaker, and it is why the same objects serve both.
 
 from __future__ import annotations
 
-import time
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from enum import StrEnum
+from enum import Enum
 from typing import Any
 
 # --------------------------------------------------------------------------- #
@@ -27,7 +26,7 @@ from typing import Any
 # --------------------------------------------------------------------------- #
 
 
-@dataclass(slots=True)
+@dataclass
 class Turn:
     """A single request to put to the target."""
 
@@ -46,7 +45,19 @@ class Turn:
 # --------------------------------------------------------------------------- #
 
 
-class Action(StrEnum):
+class _Str(str, Enum):
+    """A str-valued enum.
+
+    `enum.StrEnum` would be the obvious choice but it landed in 3.11, and the
+    machines this tool is aimed at are frequently older than that — RHEL 9 still
+    ships 3.9. The mixin gives the same behaviour everywhere.
+    """
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class Action(_Str):
     CONTINUE = "continue"
     FLAG = "flag"
     """Record it and keep generating."""
@@ -54,7 +65,7 @@ class Action(StrEnum):
     """Hang up now. The corral gate closes."""
 
 
-@dataclass(slots=True)
+@dataclass
 class Signal:
     action: Action
     monitor: str
@@ -66,7 +77,7 @@ class Signal:
         return f"[{self.monitor}] {self.reason} (token {self.at_token}, {self.at_second:.1f}s)"
 
 
-@dataclass(slots=True)
+@dataclass
 class StreamView:
     """A monitor's read-only window onto a generation in progress."""
 
@@ -99,7 +110,7 @@ class Monitor(ABC):
 # --------------------------------------------------------------------------- #
 
 
-@dataclass(slots=True)
+@dataclass
 class Transcript:
     """Everything observed during one turn."""
 
@@ -125,7 +136,7 @@ class Transcript:
         return self.chunks / self.elapsed_s if self.elapsed_s > 0 else 0.0
 
 
-class Outcome(StrEnum):
+class Outcome(_Str):
     PASS = "pass"
     """The model, or our gate, behaved as it must."""
     FAIL = "fail"
@@ -136,7 +147,7 @@ class Outcome(StrEnum):
     SKIP = "skip"
 
 
-@dataclass(slots=True)
+@dataclass
 class Finding:
     probe: str
     outcome: Outcome
@@ -248,16 +259,3 @@ class Target(ABC):
         truncated from work that was actually cancelled. Returns (delay, error).
         """
         return 0.0, "unsupported"
-
-
-class Clock:
-    """Monotonic stopwatch. Exists so tests can substitute a fake one."""
-
-    def __init__(self) -> None:
-        self._start = time.monotonic()
-
-    def reset(self) -> None:
-        self._start = time.monotonic()
-
-    def elapsed(self) -> float:
-        return time.monotonic() - self._start

@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import asdict, is_dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -60,25 +62,23 @@ class Runner:
 
 
 def _jsonable(value: Any) -> Any:
+    if isinstance(value, Enum):
+        return value.value
     if is_dataclass(value) and not isinstance(value, type):
         return {k: _jsonable(v) for k, v in asdict(value).items()}
     if isinstance(value, (list, tuple)):
         return [_jsonable(v) for v in value]
     if isinstance(value, dict):
         return {k: _jsonable(v) for k, v in value.items()}
-    if hasattr(value, "value") and hasattr(value, "name") and not isinstance(value, (int, str)):
-        return value.value  # StrEnum
     return value
 
 
 def write_report(findings: list[Finding], path: Path, *, target_desc: str) -> None:
-    import json
-
     lines = [
         json.dumps(
             {
                 "type": "run",
-                "at": datetime.now(UTC).isoformat(),
+                "at": datetime.now(timezone.utc).isoformat(),
                 "target": target_desc,
                 "probe_count": len(findings),
             }

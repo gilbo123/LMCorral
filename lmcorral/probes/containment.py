@@ -22,6 +22,7 @@ from . import register
 
 BASELINE = "baseline"
 ABORTED = "aborted-runaway"
+WARMUP = "warmup"
 
 
 @register
@@ -52,13 +53,15 @@ class StopButton(Probe):
         self.settle_error = ""
 
     def turns(self) -> Iterable[Turn]:
-        # Measured first so the model is already resident and the baseline
-        # reflects steady-state latency rather than a cold load.
-        yield Turn(
-            messages=[{"role": "user", "content": "Reply with the single word: ok"}],
-            label=BASELINE,
-            options={"num_predict": 1, "temperature": 0},
-        )
+        # The first request pays for loading the model into VRAM. Timing that
+        # and calling it the baseline would set the threshold tens of seconds
+        # too high, so it is thrown away and the second one is measured.
+        for label in (WARMUP, BASELINE):
+            yield Turn(
+                messages=[{"role": "user", "content": "Reply with the single word: ok"}],
+                label=label,
+                options={"num_predict": 1, "temperature": 0},
+            )
         yield Turn(
             messages=[
                 {
