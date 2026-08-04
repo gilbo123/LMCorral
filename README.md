@@ -10,7 +10,7 @@ model misbehave, watches the response as it streams, and cuts the connection the
 something crosses a line.
 
 ```bash
-pip install -e .            # add [docx] for Word reports: pip install -e ".[docx]"
+pip install -e .
 ```
 
 Edit `lmcorral.yaml`, then run:
@@ -208,13 +208,15 @@ lmcorral probes                             # list probes
 lmcorral run                                # uses lmcorral.yaml
 lmcorral run --probe runaway --verbose      # override which probes to run
 lmcorral run --docx report.docx             # override Word report path
+lmcorral report lmcorral-report.jsonl       # regenerate Word from an existing JSONL file
 lmcorral run --model qwen3:latest           # no yaml needed
 ```
 
 Exit code is 1 if any probe failed, so it slots into CI. Full detail, including transcripts and
-the exact signal that tripped, goes to `lmcorral-report.jsonl`; `--docx` additionally produces a
-formatted Word report with a summary table and a section per finding. Runs from a source checkout
-without installing, via `python -m lmcorral`.
+the exact signal that tripped, goes to `lmcorral-report.jsonl`. The Word report mirrors that same
+data: summary table, evidence per probe, and every transcript (output, thinking trace, signals,
+tool calls). Regenerate Word from JSONL any time with `lmcorral report`. Runs from a source
+checkout without installing, via `python -m lmcorral`.
 
 ## Honest limits
 

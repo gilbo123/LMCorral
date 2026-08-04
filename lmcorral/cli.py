@@ -1,7 +1,7 @@
 """`lmcorral` command line.
 
-`run` executes probes. `probes` lists what is available. Settings live in
-`lmcorral.yaml` in the current directory — edit that file, then run.
+`run` executes probes. `probes` lists what is available. `report` converts a
+JSONL file to Word. Settings live in `lmcorral.yaml` — edit that file, then run.
 """
 
 from __future__ import annotations
@@ -14,7 +14,13 @@ from rich.console import Console
 
 from .config import Config, ConfigError
 from .probes import all_probes, load_declarative, load_probe_dirs, select
-from .report import docx_available, print_summary, summary_counts, write_docx, write_jsonl
+from .report import (
+    print_summary,
+    summary_counts,
+    write_docx,
+    write_docx_from_jsonl,
+    write_jsonl,
+)
 from .runner import Runner
 from .targets import build_target
 
@@ -28,6 +34,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "probes":
         return _cmd_probes(args)
+    if args.command == "report":
+        return _cmd_report(args)
     return _cmd_run(args)
 
 
@@ -71,6 +79,18 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     probes_p.add_argument(
         "--probe-dir", action="append", dest="probe_dirs", type=Path, help="load these dirs first"
+    )
+
+    report_p = sub.add_parser("report", help="convert a JSONL report to Word")
+    report_p.add_argument(
+        "jsonl",
+        type=Path,
+        help="path to lmcorral-report.jsonl (or any JSONL written by lmcorral run)",
+    )
+    report_p.add_argument(
+        "--docx",
+        type=Path,
+        help="Word output path (default: same name as the JSONL with .docx extension)",
     )
 
     return parser
@@ -124,6 +144,21 @@ def _cmd_probes(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_report(args: argparse.Namespace) -> int:
+    """Convert an existing JSONL report into a Word document."""
+    jsonl_path = args.jsonl
+    docx_path = args.docx or jsonl_path.with_suffix(".docx")
+
+    try:
+        write_docx_from_jsonl(jsonl_path, docx_path)
+    except (FileNotFoundError, ValueError) as exc:
+        console.print(f"[red]{exc}[/red]")
+        return 2
+
+    console.print(f"Word report: [bold]{docx_path}[/bold]")
+    return 0
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
     """Execute the selected probes and write the configured reports."""
     try:
@@ -134,13 +169,6 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
     if config.source:
         console.print(f"[dim]config: {config.source}[/dim]")
-
-    if config.report.docx and not docx_available():
-        console.print(
-            "[red]report.docx is set but python-docx is not installed.[/red] "
-            "Run: pip install \"lmcorral[docx]\""
-        )
-        return 2
 
     try:
         _load_custom_probes(config)

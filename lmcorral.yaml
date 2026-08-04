@@ -23,7 +23,7 @@ limits:
 
 report:
   jsonl: lmcorral-report.jsonl
-  docx: null                     # e.g. report.docx  (needs pip install "lmcorral[docx]")
+  docx: null                     # e.g. report.docx
   max_transcript_chars: 4000
 
 probes: []                       # empty = run all; or list ids: [runaway, safety, leak]

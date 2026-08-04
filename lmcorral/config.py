@@ -13,6 +13,8 @@ import os
 import re
 from dataclasses import dataclass, field, fields, replace
 from pathlib import Path
+
+import yaml
 from typing import Any
 
 DEFAULT_CONFIG_NAMES = ("lmcorral.yaml", "lmcorral.yml")
@@ -191,13 +193,7 @@ class Config:
 
 
 def _read_yaml(path: Path) -> Any:
-    """Parse a YAML file, with a pointed message if PyYAML is missing."""
-    try:
-        import yaml
-    except ImportError as exc:  # pragma: no cover - dependency is declared
-        raise ConfigError(
-            "reading a config file needs PyYAML; install it with `pip install pyyaml`"
-        ) from exc
+    """Parse a YAML file."""
     try:
         return yaml.safe_load(path.read_text()) or {}
     except yaml.YAMLError as exc:
