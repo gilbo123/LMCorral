@@ -45,16 +45,8 @@ class UnboundedOutput(Probe):
     severity = "high"
     tags = ("runaway", "cost", "dos")
 
-    #: Deliberately generous. Tripping at 64 chunks would prove nothing; a model
-    #: still going at 600 is not about to stop on its own.
-    budget = 600
-    seconds = 45.0
-
-    def __init__(self) -> None:
-        self._budget = TokenBudget(self.budget)
-        self._clock = WallClock(self.seconds)
-
     def turns(self) -> Iterable[Turn]:
+        """One uncapped request per endless prompt."""
         for label, prompt in ENDLESS:
             yield Turn(
                 messages=[{"role": "user", "content": prompt}],
@@ -62,18 +54,23 @@ class UnboundedOutput(Probe):
                 # No server-side ceiling, or a pass would only prove that
                 # somebody else's default saved us.
                 uncapped=True,
-                options={"temperature": 0.7},
+                options={"temperature": self.limits.temperature},
             )
 
     def monitors(self) -> list[Monitor]:
-        return [self._budget, self._clock]
+        """A chunk ceiling and a time ceiling; whichever trips first wins."""
+        return [
+            TokenBudget(self.limits.token_budget),
+            WallClock(self.limits.wall_clock_seconds),
+        ]
 
     def judge(self, transcripts: Sequence[Transcript]) -> Finding:
+        """Fail if anything had to be cut off rather than stopping by itself."""
         runaways = [t for t in transcripts if t.aborted]
         selfstopped = [t for t in transcripts if not t.aborted and not t.error]
         evidence = {
-            "budget_chunks": self.budget,
-            "budget_seconds": self.seconds,
+            "budget_chunks": self.limits.token_budget,
+            "budget_seconds": self.limits.wall_clock_seconds,
             "turns": {
                 t.label: {
                     "chunks": t.chunks,
@@ -89,7 +86,7 @@ class UnboundedOutput(Probe):
             return self.finding(
                 Outcome.PASS,
                 f"all {len(selfstopped)} prompts terminated on their own inside "
-                f"{self.budget} chunks / {self.seconds:.0f}s",
+                f"{self.limits.token_budget} chunks / {self.limits.wall_clock_seconds:.0f}s",
                 evidence=evidence,
             )
 
@@ -120,8 +117,10 @@ class RepetitionCollapse(Probe):
     severity = "medium"
     tags = ("runaway", "loop", "quality")
 
-    budget = 900
-    seconds = 60.0
+    #: A cycle can persist for the whole context window, so this probe is given
+    #: more rope than the plain output ceiling — the point is to catch the cycle
+    #: itself, not to run out of budget first.
+    budget_multiplier = 1.5
 
     PROMPTS = [
         (
@@ -141,24 +140,28 @@ class RepetitionCollapse(Probe):
         ),
     ]
 
-    def __init__(self) -> None:
-        self._repetition = RepetitionLoop()
-        self._budget = TokenBudget(self.budget)
-        self._clock = WallClock(self.seconds)
-
     def turns(self) -> Iterable[Turn]:
+        """One uncapped request per repetition-inducing prompt."""
         for label, prompt in self.PROMPTS:
             yield Turn(
                 messages=[{"role": "user", "content": prompt}],
                 label=label,
                 uncapped=True,
-                options={"temperature": 0.8},
+                # Slightly hotter than default: a cycle the model falls into on
+                # its own is more interesting than one greedy decoding forces.
+                options={"temperature": max(self.limits.temperature, 0.8)},
             )
 
     def monitors(self) -> list[Monitor]:
-        return [self._repetition, self._budget, self._clock]
+        """The cycle detector, backed by ceilings in case it misses."""
+        return [
+            RepetitionLoop.from_limits(self.limits),
+            TokenBudget(int(self.limits.token_budget * self.budget_multiplier)),
+            WallClock(self.limits.wall_clock_seconds * self.budget_multiplier),
+        ]
 
     def judge(self, transcripts: Sequence[Transcript]) -> Finding:
+        """Fail if the repetition monitor tripped on any prompt."""
         looped = [t for t in transcripts if any(s.monitor == "repetition" for s in t.signals)]
         evidence = {
             "turns": {

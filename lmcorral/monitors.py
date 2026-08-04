@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 
+from .config import Limits
 from .protocol import Action, Monitor, Signal, StreamView
 
 # --------------------------------------------------------------------------- #
@@ -29,9 +30,11 @@ class TokenBudget(Monitor):
     name = "token_budget"
 
     def __init__(self, limit: int = 512) -> None:
+        """`limit` is the number of stream chunks tolerated before aborting."""
         self.limit = limit
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Abort once the chunk count reaches the limit."""
         if view.index < self.limit:
             return None
         return Signal(
@@ -44,14 +47,21 @@ class TokenBudget(Monitor):
 
 
 class WallClock(Monitor):
-    """Cut the stream off after a fixed number of seconds."""
+    """Cut the stream off after a fixed number of seconds.
+
+    Separate from a token budget because slow generation is the case that hurts:
+    a model producing two tokens a second can hold a GPU for an hour without
+    ever reaching a chunk ceiling.
+    """
 
     name = "wall_clock"
 
     def __init__(self, limit_s: float = 30.0) -> None:
+        """`limit_s` is the wall-clock ceiling for a single generation."""
         self.limit_s = limit_s
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Abort once the generation has run longer than the limit."""
         if view.elapsed_s < self.limit_s:
             return None
         return Signal(
@@ -73,15 +83,19 @@ class Stall(Monitor):
     name = "stall"
 
     def __init__(self, gap_s: float = 20.0) -> None:
+        """`gap_s` is the longest silence tolerated between two chunks."""
         self.gap_s = gap_s
         self._last = 0.0
 
     def reset(self) -> None:
+        """Forget the previous turn's timing."""
         self._last = 0.0
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Abort if this chunk arrived too long after the previous one."""
         gap = view.elapsed_s - self._last
         self._last = view.elapsed_s
+        # The final chunk is exempt: a slow last token is not a hang.
         if gap < self.gap_s or view.done:
             return None
         return Signal(
@@ -102,6 +116,11 @@ class RepetitionLoop(Monitor):
     the same *line* recurring while the characters between differ. Neither is
     caught by a token budget in time to matter, since both can run for the full
     context window.
+
+    This is the only monitor here that can raise a false alarm. Genuinely
+    repetitive output — a table, a verse, a long enumerated list — can look like
+    a cycle, so the thresholds are configurable and the reason string always
+    quotes the offending unit so a human can overrule it.
     """
 
     name = "repetition"
@@ -121,10 +140,19 @@ class RepetitionLoop(Monitor):
         self.line_repeats = line_repeats
         self.check_every = check_every
 
-    def reset(self) -> None:
-        pass
+    @classmethod
+    def from_limits(cls, limits: Limits) -> RepetitionLoop:
+        """Build one from a configuration block."""
+        return cls(
+            min_period=limits.repetition_min_period,
+            max_period=limits.repetition_max_period,
+            cycles=limits.repetition_cycles,
+            line_repeats=limits.repetition_line_repeats,
+            check_every=limits.repetition_check_every,
+        )
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Check for a cycle, but only every `check_every` chunks."""
         if view.index % self.check_every or view.index < self.check_every:
             return None
 
@@ -168,6 +196,7 @@ class RepetitionLoop(Monitor):
         return None
 
     def _repeated_line(self, text: str) -> tuple[str, int] | None:
+        """The most common non-trivial line, if it recurs often enough."""
         lines = [ln.strip() for ln in text.splitlines() if len(ln.strip()) > 3]
         if len(lines) < self.line_repeats:
             return None
@@ -193,12 +222,14 @@ class CanaryLeak(Monitor):
     name = "canary"
 
     def __init__(self, canary: str, *, prefix_len: int = 10) -> None:
+        """Watch for `canary`, matching only its first `prefix_len` characters."""
         self.canary = canary
         # Matching a prefix catches the leak a few tokens earlier, and survives
         # the model reformatting or truncating the tail of the secret.
         self.needle = canary[:prefix_len]
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Abort as soon as the canary prefix appears anywhere in the output."""
         if self.needle not in view.text:
             return None
         return Signal(
@@ -223,13 +254,16 @@ class ToolDeny(Monitor):
     name = "tool_deny"
 
     def __init__(self, deny: tuple[str, ...]) -> None:
+        """`deny` is the set of tool names that must never be called."""
         self.deny = deny
         self._seen = 0
 
     def reset(self) -> None:
+        """Forget which calls were already inspected."""
         self._seen = 0
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Abort on the first denied call, skipping calls already checked."""
         for call in view.tool_calls[self._seen :]:
             self._seen += 1
             name = ((call.get("function") or {}).get("name")) or call.get("name") or ""
@@ -244,6 +278,8 @@ class ToolDeny(Monitor):
         return None
 
 
+#: Shapes that credentials take in the wild. Deliberately narrow — a pattern
+#: loose enough to catch everything would fire on ordinary prose.
 SECRET_PATTERNS: dict[str, re.Pattern[str]] = {
     "openai_key": re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
     "aws_key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
@@ -264,9 +300,11 @@ class SecretShape(Monitor):
     name = "secret_shape"
 
     def __init__(self, *, patterns: dict[str, re.Pattern[str]] | None = None) -> None:
+        """Override `patterns` to watch for site-specific credential formats."""
         self.patterns = patterns or SECRET_PATTERNS
 
     def observe(self, view: StreamView) -> Signal | None:
+        """Abort if the output so far matches any credential pattern."""
         for label, pattern in self.patterns.items():
             if pattern.search(view.text):
                 return Signal(

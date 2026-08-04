@@ -42,6 +42,7 @@ class OllamaTarget(Target):
         connect_timeout: float = 5.0,
         read_timeout: float = 120.0,
     ) -> None:
+        """`base_url` may include or omit the `/api` path; both are normalised."""
         self.base_url = base_url.rstrip("/").removesuffix("/api/chat").removesuffix("/api")
         self.model = model
         self._client = httpx.Client(
@@ -52,6 +53,11 @@ class OllamaTarget(Target):
     # -- discovery ---------------------------------------------------------- #
 
     def health(self) -> tuple[bool, str]:
+        """Confirm the server is up and the requested model exists.
+
+        Resolves an empty model name to whatever is loaded first, so a bare
+        `lmcorral run` works without the caller naming a model.
+        """
         try:
             tags = self._client.get("/api/tags").json()
         except httpx.HTTPError as exc:
@@ -66,6 +72,7 @@ class OllamaTarget(Target):
         return True, f"{self.model} on {self.base_url}"
 
     def capabilities(self) -> set[str]:
+        """Feature tags the model advertises, e.g. `{"tools", "thinking"}`."""
         try:
             info = self._client.post("/api/show", json={"model": self.model}).json()
         except httpx.HTTPError:
@@ -82,6 +89,12 @@ class OllamaTarget(Target):
     # -- generation --------------------------------------------------------- #
 
     def stream(self, turn: Turn, monitors: Sequence[Monitor]) -> Transcript:
+        """Stream one chat turn, feeding every chunk to the monitors.
+
+        Closes the socket the moment a monitor returns ABORT, which cancels the
+        generation server-side. Reasoning-model "thinking" deltas are surfaced
+        to monitors as ordinary output, since runaway loops often live there.
+        """
         for monitor in monitors:
             monitor.reset()
 
@@ -205,6 +218,7 @@ class OllamaTarget(Target):
         return time.monotonic() - started, "stream closed without a token"
 
     def close(self) -> None:
+        """Close the underlying HTTP connection pool."""
         self._client.close()
 
 
@@ -223,6 +237,7 @@ class OpenAITarget(Target):
         connect_timeout: float = 5.0,
         read_timeout: float = 120.0,
     ) -> None:
+        """`base_url` gets a `/v1` suffix if it lacks one, matching convention."""
         self.base_url = base_url.rstrip("/").removesuffix("/chat/completions")
         if not self.base_url.endswith("/v1"):
             self.base_url += "/v1"
@@ -235,6 +250,7 @@ class OpenAITarget(Target):
         )
 
     def health(self) -> tuple[bool, str]:
+        """Confirm the endpoint responds and pick a default model if none given."""
         try:
             models = self._client.get("/models").json()
         except httpx.HTTPError as exc:
@@ -245,6 +261,12 @@ class OpenAITarget(Target):
         return True, f"{self.model} on {self.base_url}"
 
     def stream(self, turn: Turn, monitors: Sequence[Monitor]) -> Transcript:
+        """Stream one turn over SSE, aborting the socket on any ABORT signal.
+
+        Translates the shared `num_predict` option to `max_tokens`, and reads
+        `reasoning_content` deltas as output so cycles in a model's thinking are
+        caught the same as cycles in its answer.
+        """
         for monitor in monitors:
             monitor.reset()
 
@@ -325,6 +347,12 @@ class OpenAITarget(Target):
         return transcript
 
     def settling_delay(self, *, timeout: float = 30.0) -> tuple[float, str]:
+        """Time a one-token request, to check the endpoint recovered after abort.
+
+        Less diagnostic than the Ollama version, since not every OpenAI-style
+        server serialises per model, but a large delay is still a strong signal
+        that abandoned work is still running.
+        """
         started = time.monotonic()
         try:
             with self._client.stream(
@@ -346,11 +374,16 @@ class OpenAITarget(Target):
         return time.monotonic() - started, "stream closed without a token"
 
     def close(self) -> None:
+        """Close the underlying HTTP connection pool."""
         self._client.close()
 
 
 def build_target(url: str, model: str, *, api_key: str = "", read_timeout: float = 120.0) -> Target:
-    """Pick a target from the shape of the URL, so `--target` is all anyone types."""
+    """Pick a target from the shape of the URL, so `--target` is all anyone types.
+
+    A `/v1` in the path (or the word ``openai``) selects the OpenAI-compatible
+    client; anything else is treated as a native Ollama endpoint.
+    """
     if "/v1" in url or "openai" in url:
         return OpenAITarget(url, model, api_key=api_key, read_timeout=read_timeout)
     return OllamaTarget(url, model, read_timeout=read_timeout)

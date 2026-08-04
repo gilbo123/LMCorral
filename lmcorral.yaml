@@ -1,0 +1,35 @@
+# Edit this file, then run:  lmcorral run
+# Flags on the command line override anything here.
+# ${VAR} is replaced from your environment (use for API keys, not literals).
+
+target:
+  url: http://127.0.0.1:11434
+  model: ""                      # empty = whatever Ollama has loaded; or e.g. qwen3.6:latest
+  api_key: "${OPENAI_API_KEY}"   # only for OpenAI-compatible endpoints (/v1 URLs)
+  connect_timeout_seconds: 5.0
+  read_timeout_seconds: 120.0
+
+limits:
+  token_budget: 600              # max stream chunks before cut-off
+  wall_clock_seconds: 45.0       # max seconds per generation
+  token_gap_seconds: 20.0        # max silence between chunks
+  max_tokens: 700                # max answer length for bounded probes
+  temperature: 0.7
+  repetition_min_period: 3
+  repetition_max_period: 220
+  repetition_cycles: 4
+  repetition_line_repeats: 8
+  repetition_check_every: 16
+
+report:
+  jsonl: lmcorral-report.jsonl
+  docx: null                     # e.g. report.docx  (needs pip install "lmcorral[docx]")
+  max_transcript_chars: 4000
+
+probes: []                       # empty = run all; or list ids: [runaway, safety, leak]
+
+probe_limits: {}                 # per-probe overrides, e.g. runaway.unbounded_output: {token_budget: 1200}
+
+probe_dirs: []                   # folders of your own .py probes
+
+custom_probes: []                # probes without Python — see README

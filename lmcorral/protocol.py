@@ -21,6 +21,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+from .config import Limits
+
 # --------------------------------------------------------------------------- #
 # What a probe sends
 # --------------------------------------------------------------------------- #
@@ -58,6 +60,8 @@ class _Str(str, Enum):
 
 
 class Action(_Str):
+    """What a monitor wants done with the stream it is watching."""
+
     CONTINUE = "continue"
     FLAG = "flag"
     """Record it and keep generating."""
@@ -67,6 +71,8 @@ class Action(_Str):
 
 @dataclass
 class Signal:
+    """A monitor's ruling on a stream in progress."""
+
     action: Action
     monitor: str
     reason: str
@@ -74,6 +80,7 @@ class Signal:
     at_second: float = 0.0
 
     def __str__(self) -> str:
+        """One-line form used in the terminal and in report evidence."""
         return f"[{self.monitor}] {self.reason} (token {self.at_token}, {self.at_second:.1f}s)"
 
 
@@ -129,14 +136,18 @@ class Transcript:
 
     @property
     def abort_signal(self) -> Signal | None:
+        """The signal that ended the stream, if a monitor aborted it."""
         return next((s for s in self.signals if s.action is Action.ABORT), None)
 
     @property
     def tokens_per_s(self) -> float:
+        """Throughput in chunks per second, or 0 if nothing was generated."""
         return self.chunks / self.elapsed_s if self.elapsed_s > 0 else 0.0
 
 
 class Outcome(_Str):
+    """The verdict of a probe."""
+
     PASS = "pass"
     """The model, or our gate, behaved as it must."""
     FAIL = "fail"
@@ -149,6 +160,8 @@ class Outcome(_Str):
 
 @dataclass
 class Finding:
+    """One probe's verdict, plus the evidence and transcripts behind it."""
+
     probe: str
     outcome: Outcome
     detail: str
@@ -169,6 +182,10 @@ class Probe(ABC):
 
     Subclass, set the class attributes, implement `turns` and `judge`, and
     decorate with `@register`. Nothing else in the codebase needs to change.
+
+    Tunable numbers come from `self.limits`, which the runner replaces with the
+    user's configuration before the probe runs. Reading them inside `turns` and
+    `monitors` rather than in `__init__` is what makes that possible.
     """
 
     id: str = ""
@@ -183,9 +200,16 @@ class Probe(ABC):
     #: not be able to become one.
     max_turns: int = 12
 
+    #: Built-in defaults, replaced by `configure()` for a configured run.
+    limits: Limits = Limits()
+
+    def configure(self, limits: Limits) -> None:
+        """Adopt the caller's limits. Called once, before `turns()`."""
+        self.limits = limits
+
     @abstractmethod
     def turns(self) -> Iterable[Turn]:
-        ...
+        """The requests this probe sends, in order."""
 
     def monitors(self) -> list[Monitor]:
         """Monitors armed for every turn of this probe."""
@@ -209,9 +233,8 @@ class Probe(ABC):
 
     @abstractmethod
     def judge(self, transcripts: Sequence[Transcript]) -> Finding:
-        ...
+        """Turn what happened into a single verdict."""
 
-    # Small helper so subclasses do not repeat the plumbing.
     def finding(
         self,
         outcome: Outcome,
@@ -219,6 +242,7 @@ class Probe(ABC):
         *,
         evidence: dict[str, Any] | None = None,
     ) -> Finding:
+        """Build a Finding, filling in this probe's identity and metadata."""
         return Finding(
             probe=self.id,
             outcome=outcome,

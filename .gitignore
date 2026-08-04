@@ -3,6 +3,11 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# LMCorral generated reports
+lmcorral-report.jsonl
+*.lmcorral.jsonl
+sample-report.docx
+
 # C extensions
 *.so
 
