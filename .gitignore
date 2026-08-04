@@ -6,7 +6,7 @@ __pycache__/
 # LMCorral generated reports
 lmcorral-report.jsonl
 *.lmcorral.jsonl
-sample-report.docx
+*.lmcorral.docx
 
 # C extensions
 *.so
