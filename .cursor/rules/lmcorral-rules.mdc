@@ -1,0 +1,89 @@
+---
+description: Project-specific coding standards and best practices for LMCorral project.
+entry: 
+  - lmcorral
+alwaysApply: true
+---
+
+# Python Development
+
+## 0. General
+-   Don't over-engineer the code. Keep it simple and readable.
+-   Keep answers as short as possible.
+-   Don't restructure the code unless permission is given.
+-   Don't add new features unless permission is given.
+-   All imports go at the top of the file - not conditionally.
+-   Use type hints for better code clarity and maintainability.
+-   NO PATH MANIPULATION. We always run from root directory (i.e. /home/{USERNAME}/lmcorral/).
+-   No unnecessary functions, files or variables bloating the code - keep it simple and readable.
+
+## 1. Functions, classes, and scripts
+
+-   Follow `PEP 8` style guidelines: Ensure your Python code adheres to `PEP 8` for readability and consistency.
+-   Use classes where appropriate and break code into like components.
+-   Add relevant docstrings for every new file, class, and function.
+
+## 2. Naming Conventions
+
+-   Follow PEP 8 style guidelines for naming conventions.
+-   Class, function and class names should be specifically generic, and not contain temporary or variable terms e.g.: 
+    -   `test_camera_operation.py` => `initialise_camera.py`
+    -   `rgb_image = get_flir_image()` => `grabbed_image = get_cam_image()`
+    -   `get_2_week_data()` => `get_data_by_date()`
+
+## 3. Error Handling
+
+-   Implement `try-except` only for the following scenarios unless otherwise instructed: 
+    -   Peripheral interactions (e.g. connecting to devices or networks).
+    -   Where a blocking process may fail.
+
+
+## 4. Good Examples
+
+```python
+    def calculate_sum(a: int, b: int) -> int:
+        """
+        Calculates the sum of the two integers provided as arguments.
+        
+        Args:
+            a: The first integer.
+            b: The second integer.
+
+        Returns:
+            The sum of the two integers.
+        """
+
+        # return the sum of the two integers
+        return a + b
+```
+
+```python
+    config_value = self.config["key"]
+```
+
+
+## 5. Bad Examples
+
+```python
+    def calc(a, b):
+        """Calculates values."""
+
+        return a + b
+```
+```python
+    def calculate_sum(a: int, b: int) -> int:
+        return a + b
+```
+```python
+    def creat_matrix(n: int, m: int) -> ndarray:
+        
+        from numpy import zeros
+        
+        return zeros([n, m])
+```
+
+```python
+    config_value = self.config.get("key", "default_value") #NEVER USE FALLBACK DEFAULT VALUES.
+```
+
+

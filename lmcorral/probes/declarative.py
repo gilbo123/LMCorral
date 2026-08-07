@@ -6,7 +6,7 @@ more subtle — inspecting tool calls, timing the server, multi-turn escalation 
 is a real `Probe` subclass in a `.py` file instead, and the config points at it
 with `probe_dirs`.
 
-A declarative probe looks like this in `lmcorral.yaml`:
+A declarative probe looks like this in `config.yaml`:
 
     custom_probes:
       - id: custom.no_markdown

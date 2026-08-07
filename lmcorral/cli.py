@@ -1,7 +1,7 @@
 """`lmcorral` command line.
 
 `run` executes probes. `probes` lists what is available. `report` converts a
-JSONL file to Word. Settings live in `lmcorral.yaml` — edit that file, then run.
+JSONL file to Word. Settings live in `config.yaml` — edit that file, then run.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def _build_parser() -> argparse.ArgumentParser:
     run_p.add_argument(
         "--config",
         type=Path,
-        help="path to lmcorral.yaml (default: lmcorral.yaml in the current directory)",
+        help="path to config.yaml (default: config.yaml in the current directory; required)",
     )
     run_p.add_argument(
         "--target",
@@ -75,7 +75,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     probes_p = sub.add_parser("probes", help="list available probes")
     probes_p.add_argument(
-        "--config", type=Path, help="load lmcorral.yaml first (for custom probes in config)"
+        "--config", type=Path, help="load config.yaml first (for custom probes in config)"
     )
     probes_p.add_argument(
         "--probe-dir", action="append", dest="probe_dirs", type=Path, help="load these dirs first"
@@ -97,7 +97,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _load_config(args: argparse.Namespace) -> Config:
-    """Read lmcorral.yaml and layer command-line overrides on top."""
+    """Read config.yaml and layer command-line overrides on top."""
     config = Config.load(getattr(args, "config", None))
 
     if getattr(args, "target", None):

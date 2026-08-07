@@ -1,10 +1,9 @@
 """Configuration.
 
-Edit `lmcorral.yaml` in the directory where you run the tool. That is the only
-config file. If it is missing, built-in defaults apply and you can still pass
-everything on the command line.
+Edit `config.yaml` in the directory where you run the tool. That file is
+required. Pass `--config /path/to/config.yaml` to use a file elsewhere.
 
-Precedence: CLI flag > lmcorral.yaml > built-in defaults.
+Precedence: CLI flag > config.yaml > built-in defaults for keys omitted from the file.
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ from pathlib import Path
 import yaml
 from typing import Any
 
-DEFAULT_CONFIG_NAMES = ("lmcorral.yaml", "lmcorral.yml")
+DEFAULT_CONFIG_NAMES = ("config.yaml", "config.yml")
 
 #: `${VAR}` inside any config string is replaced from the environment. Secrets
 #: belong in the environment, not in a file that ends up committed.
@@ -129,15 +128,15 @@ class Config:
 
     @classmethod
     def load(cls, path: Path | None = None) -> Config:
-        """Read a config file, or return defaults if there is nothing to read.
-
-        With no `path`, an `lmcorral.yaml` beside the working directory is picked
-        up automatically; its absence is not an error.
-        """
+        """Read `config.yaml` (or the path given by `--config`)."""
         if path is None:
             path = _discover_config()
             if path is None:
-                return cls()
+                names = " or ".join(DEFAULT_CONFIG_NAMES)
+                raise ConfigError(
+                    f"{names} not found in {Path.cwd()}. "
+                    "Copy config.yaml from the project, edit it, then run lmcorral run."
+                )
         if not path.exists():
             raise ConfigError(f"config file not found: {path}")
 
@@ -201,7 +200,7 @@ def _read_yaml(path: Path) -> Any:
 
 
 def _discover_config() -> Path | None:
-    """Find an `lmcorral.yaml` in the working directory, if there is one."""
+    """Find a `config.yaml` in the working directory, if there is one."""
     for name in DEFAULT_CONFIG_NAMES:
         candidate = Path.cwd() / name
         if candidate.exists():

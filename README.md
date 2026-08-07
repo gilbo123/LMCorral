@@ -13,13 +13,13 @@ something crosses a line.
 pip install -e .
 ```
 
-Edit `lmcorral.yaml`, then run:
+Edit `config.yaml`, then run:
 
 ```bash
 lmcorral run
 ```
 
-No config file? Still works — pass `--model` and `--target` on the command line instead.
+Copy `config.yaml` from this repo, edit `target.url` and `target.model`, then run from that directory.
 
 ## Why interception rather than a sandbox
 
@@ -109,7 +109,7 @@ refusal heuristic, so each verdict carries the response snippet it judged — co
 
 Three ways, in ascending order of effort.
 
-**1. In `lmcorral.yaml`, no Python.** For "send prompts, pass or fail on the reply":
+**1. In `config.yaml`, no Python.** For "send prompts, pass or fail on the reply":
 
 ```yaml
 custom_probes:
@@ -178,7 +178,7 @@ repeated-line detection), `CanaryLeak`, `SecretShape` (credential-shaped output)
 
 ## Configuration
 
-**One file: `lmcorral.yaml`.** Open it, change the values, save, run `lmcorral run`.
+**One file: `config.yaml`.** Open it, change the values, save, run `lmcorral run`.
 
 ```yaml
 target:
@@ -205,11 +205,11 @@ Misspell a key and the run fails immediately with a list of valid names.
 
 ```bash
 lmcorral probes                             # list probes
-lmcorral run                                # uses lmcorral.yaml
+lmcorral run                                # reads config.yaml in the current directory
 lmcorral run --probe runaway --verbose      # override which probes to run
 lmcorral run --docx report.docx             # override Word report path
+lmcorral run --config /path/to/config.yaml
 lmcorral report lmcorral-report.jsonl       # regenerate Word from an existing JSONL file
-lmcorral run --model qwen3:latest           # no yaml needed
 ```
 
 Exit code is 1 if any probe failed, so it slots into CI. Full detail, including transcripts and

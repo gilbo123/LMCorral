@@ -5,7 +5,7 @@ Adding a test can be done three ways, in ascending order of effort:
 1.  Drop a `.py` file in this package. It is discovered on the next run.
 2.  Point `probe_dirs` (config) or `--probe-dir` (flag) at a folder of your own
     `.py` files. Same `@register` decorator, no need to touch the install.
-3.  Write a `custom_probes` block in `lmcorral.yaml` and skip Python entirely,
+3.  Write a `custom_probes` block in `config.yaml` and skip Python entirely,
     for the common case of "send these prompts, fail if the reply does / does
     not contain X".
 
