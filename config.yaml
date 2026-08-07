@@ -3,9 +3,10 @@
 # ${VAR} is replaced from your environment (use for API keys, not literals).
 
 target:
-  # url: http://127.0.0.1:11434
-  url: http://192.168.1.200:11434
-  model: "gpt-oss:120b"                      # empty = whatever Ollama has loaded; or e.g. qwen3.6:latest
+  url: http://127.0.0.1:11434
+  # url: http://192.168.1.200:11434
+  model: "qwen3.6:latest"                      # empty = whatever Ollama has loaded; or e.g. qwen3.6:latest
+  # model: "qwen3.5:35b"                      # empty = whatever Ollama has loaded; or e.g. qwen3.6:latest
   api_key: "${OPENAI_API_KEY}"   # only for OpenAI-compatible endpoints (/v1 URLs)
   connect_timeout_seconds: 5.0
   read_timeout_seconds: 120.0

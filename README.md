@@ -13,13 +13,11 @@ something crosses a line.
 pip install -e .
 ```
 
-Edit `config.yaml`, then run:
+Edit `config.yaml` from this repo, edit `target.url` and `target.model`, then run from that directory.
 
 ```bash
 lmcorral run
 ```
-
-Copy `config.yaml` from this repo, edit `target.url` and `target.model`, then run from that directory.
 
 ## Why interception rather than a sandbox
 
