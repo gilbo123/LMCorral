@@ -224,3 +224,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#uv
+uv.lock
+uv.toml
+
+# pdm
+pdm.lock
+pdm.toml
+
+# poetry
+poetry.lock
+poetry.toml
+
+# ruff
+ruff.toml
