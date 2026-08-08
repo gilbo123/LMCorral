@@ -51,12 +51,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help="path to config.yaml (default: config.yaml in the current directory; required)",
     )
     run_p.add_argument(
-        "--target",
-        help="base URL of the endpoint (Ollama native or OpenAI-compatible)",
-    )
-    run_p.add_argument("--model", help="model name; default is whatever the server has loaded")
-    run_p.add_argument("--api-key", help="bearer token, for OpenAI-compatible targets")
-    run_p.add_argument(
         "--probe",
         action="append",
         dest="probes",
@@ -97,15 +91,9 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _load_config(args: argparse.Namespace) -> Config:
-    """Read config.yaml and layer command-line overrides on top."""
+    """Read config.yaml; apply optional CLI overrides for probes and reports."""
     config = Config.load(getattr(args, "config", None))
 
-    if getattr(args, "target", None):
-        config.target.url = args.target
-    if getattr(args, "model", None):
-        config.target.model = args.model
-    if getattr(args, "api_key", None):
-        config.target.api_key = args.api_key
     if getattr(args, "probes", None):
         config.probes = args.probes
     if getattr(args, "probe_dirs", None):

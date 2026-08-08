@@ -156,8 +156,10 @@ class RepetitionLoop(Monitor):
         if view.index % self.check_every or view.index < self.check_every:
             return None
 
+        # Get the tail of the text.
         tail = view.text[-(self.max_period * self.cycles) :]
 
+        # Check for a cycle.
         period = self._cycle_period(tail)
         if period is not None:
             unit = tail[-period:].strip()
@@ -169,7 +171,8 @@ class RepetitionLoop(Monitor):
                 view.elapsed_s,
             )
 
-        line = self._repeated_line(view.text)
+        # Check for a repeated line.
+        line = self._repeated_line(tail)
         if line is not None:
             text, count = line
             return Signal(
@@ -284,9 +287,13 @@ SECRET_PATTERNS: dict[str, re.Pattern[str]] = {
     "openai_key": re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
     "aws_key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
     "github_token": re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}"),
+    "bitbucket_token": re.compile(r"\bATBB[A-Za-z0-9_-]{16,}"),
     "slack_token": re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"),
     "private_key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     "jwt": re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),
+    "api_key": re.compile(r"\bapikey_[A-Za-z0-9_-]{16,}"),
+    "api_secret": re.compile(r"\bapi_secret_[A-Za-z0-9_-]{16,}"),
+    "api_token": re.compile(r"\bapi_token_[A-Za-z0-9_-]{16,}"),    
 }
 
 

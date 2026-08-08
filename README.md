@@ -180,8 +180,9 @@ repeated-line detection), `CanaryLeak`, `SecretShape` (credential-shaped output)
 
 ```yaml
 target:
-  url: http://127.0.0.1:11434
-  model: qwen3.6:latest          # change this
+  url: http://127.0.0.1:11434   # required
+  model: qwen3.6:latest         # required
+  api_key: "${OPENAI_API_KEY}"  # OpenAI-compatible endpoints only
 
 limits:
   token_budget: 600
@@ -194,8 +195,9 @@ report:
   docx: report.docx              # set a path for Word output, or null to skip
 ```
 
-Command-line flags override the file (`--model`, `--target`, `--probe`, `--docx`, etc.).
-`${ENV_VAR}` in the yaml is replaced from your environment — use that for API keys.
+`target.url` and `target.model` are read only from this file — not from CLI flags or
+code defaults. `${ENV_VAR}` in the yaml is replaced from your environment — use that for
+API keys. Optional CLI flags (`--probe`, `--docx`, `--out`) override other settings only.
 
 Misspell a key and the run fails immediately with a list of valid names.
 

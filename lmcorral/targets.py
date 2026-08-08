@@ -36,8 +36,8 @@ class OllamaTarget(Target):
 
     def __init__(
         self,
-        base_url: str = "http://127.0.0.1:11434",
-        model: str = "",
+        base_url: str,
+        model: str,
         *,
         connect_timeout: float = 5.0,
         read_timeout: float = 120.0,
@@ -53,11 +53,7 @@ class OllamaTarget(Target):
     # -- discovery ---------------------------------------------------------- #
 
     def health(self) -> tuple[bool, str]:
-        """Confirm the server is up and the requested model exists.
-
-        Resolves an empty model name to whatever is loaded first, so a bare
-        `lmcorral run` works without the caller naming a model.
-        """
+        """Confirm the server is up and the configured model exists."""
         try:
             tags = self._client.get("/api/tags").json()
         except httpx.HTTPError as exc:
@@ -65,9 +61,7 @@ class OllamaTarget(Target):
         names = [m["name"] for m in tags.get("models", [])]
         if not names:
             return False, f"{self.base_url} has no models pulled"
-        if not self.model:
-            self.model = names[0]
-        elif self.model not in names and f"{self.model}:latest" not in names:
+        if self.model not in names and f"{self.model}:latest" not in names:
             return False, f"model {self.model!r} not found; available: {', '.join(names)}"
         return True, f"{self.model} on {self.base_url}"
 
@@ -250,14 +244,15 @@ class OpenAITarget(Target):
         )
 
     def health(self) -> tuple[bool, str]:
-        """Confirm the endpoint responds and pick a default model if none given."""
+        """Confirm the endpoint responds and the configured model is listed."""
         try:
             models = self._client.get("/models").json()
         except httpx.HTTPError as exc:
             return False, f"cannot reach {self.base_url}: {exc}"
         names = [m["id"] for m in models.get("data", [])]
-        if not self.model and names:
-            self.model = names[0]
+        if self.model not in names:
+            available = ", ".join(names) if names else "(none listed)"
+            return False, f"model {self.model!r} not found; available: {available}"
         return True, f"{self.model} on {self.base_url}"
 
     def stream(self, turn: Turn, monitors: Sequence[Monitor]) -> Transcript:
@@ -379,7 +374,7 @@ class OpenAITarget(Target):
 
 
 def build_target(url: str, model: str, *, api_key: str = "", read_timeout: float = 120.0) -> Target:
-    """Pick a target from the shape of the URL, so `--target` is all anyone types.
+    """Pick a target from the shape of the URL.
 
     A `/v1` in the path (or the word ``openai``) selects the OpenAI-compatible
     client; anything else is treated as a native Ollama endpoint.

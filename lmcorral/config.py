@@ -1,9 +1,10 @@
 """Configuration.
 
 Edit `config.yaml` in the directory where you run the tool. That file is
-required. Pass `--config /path/to/config.yaml` to use a file elsewhere.
+required, including `target.url` and `target.model`. Pass `--config` to use a
+file elsewhere.
 
-Precedence: CLI flag > config.yaml > built-in defaults for keys omitted from the file.
+Optional CLI flags (`--probe`, `--docx`, etc.) override non-target settings only.
 """
 
 from __future__ import annotations
@@ -78,11 +79,13 @@ class Limits:
 
 @dataclass
 class TargetConfig:
-    """Where the model is and how to talk to it."""
+    """Where the model is and how to talk to it.
+
+    `url` and `model` must be set in config.yaml — there are no code defaults.
+    """
 
     #: Base URL. A `/v1` in the path selects the OpenAI-compatible client.
-    url: str = "http://127.0.0.1:11434"
-    #: Empty means "whatever the server has loaded", resolved at health check.
+    url: str = ""
     model: str = ""
     #: Bearer token for OpenAI-compatible endpoints. Use `${VAR}`, not a literal.
     api_key: str = ""
@@ -146,7 +149,10 @@ class Config:
         raw = _expand_env(raw)
 
         config = cls(source=path)
-        _apply_section(raw.pop("target", {}), config.target, path, "target")
+        target_raw = raw.pop("target", None)
+        _require_target_section(target_raw, path)
+        _apply_section(target_raw, config.target, path, "target")
+        _validate_target(config.target, path)
         _apply_section(raw.pop("limits", {}), config.limits, path, "limits")
         _apply_section(raw.pop("report", {}), config.report, path, "report")
 
@@ -189,6 +195,26 @@ class Config:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
+
+def _require_target_section(raw: Any, path: Path) -> None:
+    """Require a target block with url and model set in the yaml."""
+    if not isinstance(raw, dict) or not raw:
+        raise ConfigError(
+            f"{path}: target section is required with url and model "
+            "(e.g. target.url: http://192.168.1.200:11434)"
+        )
+    for key in ("url", "model"):
+        if key not in raw:
+            raise ConfigError(f"{path}: target.{key} is required")
+
+
+def _validate_target(target: TargetConfig, path: Path) -> None:
+    """Reject blank url or model after env expansion."""
+    if not target.url.strip():
+        raise ConfigError(f"{path}: target.url must not be empty")
+    if not target.model.strip():
+        raise ConfigError(f"{path}: target.model must not be empty")
 
 
 def _read_yaml(path: Path) -> Any:
