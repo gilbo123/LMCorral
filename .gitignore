@@ -162,6 +162,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# cursor
+.cursor/
+
 # Spyder project settings
 .spyderproject
 .spyproject
