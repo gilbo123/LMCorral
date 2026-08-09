@@ -36,6 +36,8 @@ vLLM, OpenAI-compatible APIs) and watches the response **as it streams**. Monito
 mid-generation — runaway output, repetition, leaked secrets, denied tool calls — without copying
 the model or rebuilding your stack.
 
+**Install it on your laptop, point it at your server, and run it.**
+
 That is restraint at the wire, not isolation of the weights. Malicious artifacts at load time are
 a different problem; this tool targets failures that show up once the endpoint is already
 answering.
