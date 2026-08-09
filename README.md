@@ -1,5 +1,5 @@
 <!-- Logo: add docs/logo.png and uncomment the line below -->
-<!-- ![LMCorral](docs/logo.png) -->
+![LMCorral](docs/LMCorral.png)
 
 # LMCorral
 
