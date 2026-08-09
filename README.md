@@ -31,7 +31,7 @@ uv run lmcorral run          # or: lmcorral run  with the venv active
 
 ## What it is
 
-A **corral**, not a sandbox. LMCorral sits in front of a model server you already run (Ollama,
+**LMCorral** sits in front of a model server you already run (Ollama,
 vLLM, OpenAI-compatible APIs) and watches the response **as it streams**. Monitors can hang up
 mid-generation — runaway output, repetition, leaked secrets, denied tool calls — without copying
 the model or rebuilding your stack.
