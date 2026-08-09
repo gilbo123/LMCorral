@@ -45,7 +45,7 @@ answering.
 ```bash
 lmcorral run --verbose
 lmcorral report lmcorral-report.jsonl
-python -m lmcorral run         # without installing the console script
+python -m lmcorral run         # module form; works with venv active (pip or uv)
 ```
 
 ## Run checks
