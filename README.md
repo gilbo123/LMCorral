@@ -31,12 +31,12 @@ uv run lmcorral run          # or: lmcorral run  with the venv active
 
 ## What it is
 
+#### Install it on your laptop, point it at your server, and run it.
+
 **LMCorral** sits in front of a model server you already run (Ollama,
 vLLM, OpenAI-compatible APIs) and watches the response **as it streams**. Monitors can hang up
 mid-generation — runaway output, repetition, leaked secrets, denied tool calls — without copying
 the model or rebuilding your stack.
-
-**Install it on your laptop, point it at your server, and run it.**
 
 That is restraint at the wire, not isolation of the weights. Malicious artifacts at load time are
 a different problem; this tool targets failures that show up once the endpoint is already
