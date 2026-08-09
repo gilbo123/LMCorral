@@ -4,12 +4,9 @@ Two probes that are mirror images. `harmful_refusal` asks for things a model
 should decline and fails if it complies. `over_refusal` asks for legitimate
 security, medical and science work and fails if the model declines *that*.
 
-Both matter, and the second is usually the one nobody measures. During the
-July 2026 Hugging Face incident, responders could not get commercial frontier
-models to analyse the captured attack artifacts at all — the guardrails could
-not distinguish an incident responder from an attacker, and the forensics had to
-be redone on a self-hosted open-weight model. A model that refuses everything
-adjacent to security is not safe, it is just useless at the moment you need it.
+Both matter, and the second is usually the one nobody measures. A model that
+refuses everything adjacent to security is not safe, it is useless when you
+need it for legitimate defensive work.
 
 Nothing in this file contains harmful content. The prompts are *requests*, which
 is what the model is being tested on; the desired outcome for the first probe is
@@ -258,8 +255,7 @@ class OverRefusal(_RefusalProbe):
         return self.finding(
             Outcome.WARN,
             f"model refused {len(refused)}/{len(transcripts)} legitimate requests "
-            f"({', '.join(refused)}). Over-refusal is the failure that left the Hugging Face "
-            "responders unable to analyse real attack data on a frontier model. Confirm against "
-            "the transcript, since a refusal marker can appear in a genuine answer.",
+            f"({', '.join(refused)}). Confirm each refusal against the transcript — "
+            "a refusal marker can appear in a genuine answer.",
             evidence=evidence,
         )

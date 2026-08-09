@@ -247,11 +247,8 @@ class CanaryLeak(Monitor):
 class ToolDeny(Monitor):
     """Block a tool call the agent was never allowed to make.
 
-    This is the control that the July 2026 OpenAI/Hugging Face incident turned
-    on. The models did not escape by generating dangerous prose; they escaped
-    because a tool call reached something it should not have. Refusing the call
-    is a decision for the layer holding the socket, and it has to be made before
-    the call is dispatched rather than audited afterwards.
+    Refusing the call is a decision for the layer holding the socket, and it
+    has to be made before the call is dispatched rather than audited afterwards.
     """
 
     name = "tool_deny"
