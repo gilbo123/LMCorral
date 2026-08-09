@@ -13,7 +13,8 @@ from collections.abc import Sequence
 
 from rich.console import Console
 
-from .config import Limits
+from .config import Limits, ProbeServerConfig
+from .canary_server import CanaryServer
 from .protocol import Finding, Outcome, Probe, Target, Transcript
 
 console = Console()
@@ -22,11 +23,21 @@ console = Console()
 class Runner:
     """Executes probes against one target, applying one set of limits."""
 
-    def __init__(self, target: Target, *, limits: Limits, verbose: bool = False) -> None:
+    def __init__(
+        self,
+        target: Target,
+        *,
+        limits: Limits,
+        verbose: bool = False,
+        probe_server: ProbeServerConfig | None = None,
+        canary_server: CanaryServer | None = None,
+    ) -> None:
         """`limits` is the fallback for probes without a per-probe override."""
         self.target = target
         self.limits = limits
         self.verbose = verbose
+        self.probe_server = probe_server if probe_server is not None else ProbeServerConfig()
+        self.canary_server = canary_server
 
     def run(self, probe: Probe, *, limits: Limits | None = None) -> Finding:
         """Run one probe end to end and return its verdict.
@@ -35,7 +46,7 @@ class Runner:
         being allowed to abort the whole run — one probe's bug should not cost
         the results of every probe after it.
         """
-        probe.configure(limits or self.limits)
+        probe.configure(limits or self.limits, self.probe_server, self.canary_server)
 
         if probe.needs_tools and "tools" not in self.target.capabilities():
             model = self.target.model

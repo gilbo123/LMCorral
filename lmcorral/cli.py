@@ -12,6 +12,7 @@ from pathlib import Path
 
 from rich.console import Console
 
+from .canary_server import CanaryServer
 from .config import Config, ConfigError
 from .probes import all_probes, load_declarative, load_probe_dirs, select
 from .report import (
@@ -183,11 +184,28 @@ def _cmd_run(args: argparse.Namespace) -> int:
         return 2
 
     console.print(f"running {len(probes)} probe(s)...\n")
-    runner = Runner(target, limits=config.limits, verbose=args.verbose)
+    canary = CanaryServer()
+    if config.probe_server.port:
+        url = canary.start(
+            config.probe_server.host,
+            config.probe_server.port,
+            config.probe_server.path,
+        )
+        console.print(f"[dim]canary server: {url}[/dim]")
+    runner = Runner(
+        target,
+        limits=config.limits,
+        verbose=args.verbose,
+        probe_server=config.probe_server,
+        canary_server=canary if config.probe_server.port else None,
+    )
     findings = []
-    for probe in probes:
-        console.print(f"[bold cyan]{probe.id}[/bold cyan] — {probe.summary}")
-        findings.append(runner.run(probe, limits=config.limits_for(probe.id)))
+    try:
+        for probe in probes:
+            console.print(f"[bold cyan]{probe.id}[/bold cyan] — {probe.summary}")
+            findings.append(runner.run(probe, limits=config.limits_for(probe.id)))
+    finally:
+        canary.stop()
 
     print_summary(findings)
 

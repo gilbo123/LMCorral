@@ -105,6 +105,15 @@ class ReportConfig:
 
 
 @dataclass
+class ProbeServerConfig:
+    """Optional local HTTP sink for SSRF probes when tools are executed for real."""
+
+    host: str = "127.0.0.1"
+    port: int = 0
+    path: str = "/canary/ssrf"
+
+
+@dataclass
 class Config:
     """A whole run's settings."""
 
@@ -119,6 +128,8 @@ class Config:
     probe_dirs: list[Path] = field(default_factory=list)
     #: Probes defined entirely in the config file, no Python required.
     custom_probes: list[dict[str, Any]] = field(default_factory=list)
+    #: Optional canary HTTP listener for SSRF confirmation when tools execute.
+    probe_server: ProbeServerConfig = field(default_factory=ProbeServerConfig)
     #: Path the config was read from, for the report header. None if defaults.
     source: Path | None = None
 
@@ -176,11 +187,13 @@ class Config:
             raise ConfigError(f"{path}: custom_probes must be a list")
         config.custom_probes = custom
 
+        _apply_section(raw.pop("probe_server", {}), config.probe_server, path, "probe_server")
+
         if raw:
             raise ConfigError(
                 f"{path}: unknown top-level key(s): {', '.join(sorted(raw))}. "
                 "Valid keys are: target, limits, report, probes, probe_limits, "
-                "probe_dirs, custom_probes"
+                "probe_dirs, custom_probes, probe_server"
             )
 
         # Paths in a config file read most naturally as relative to that file.

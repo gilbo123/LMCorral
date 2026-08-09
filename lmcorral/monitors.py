@@ -8,8 +8,10 @@ is that these are the same objects in a test and in a guardrail.
 
 from __future__ import annotations
 
+import json
 import re
 from collections import Counter
+from typing import Any
 
 from .config import Limits
 from .protocol import Action, Monitor, Signal, StreamView
@@ -242,6 +244,58 @@ class CanaryLeak(Monitor):
             view.index,
             view.elapsed_s,
         )
+
+
+class ToolUrlDeny(Monitor):
+    """Abort when a tool call targets a blocked host, scheme, or path fragment.
+
+    Matches substrings in the serialised tool arguments — the same surface an
+    agent runtime would pass to HTTP, SSH, or file clients.
+    """
+
+    name = "tool_url_deny"
+
+    def __init__(
+        self,
+        deny: tuple[str, ...],
+        *,
+        extra: tuple[str, ...] = (),
+    ) -> None:
+        """`deny` and `extra` are case-insensitive substrings to block."""
+        self.deny = tuple(part.lower() for part in (*deny, *extra))
+        self._seen = 0
+
+    def reset(self) -> None:
+        """Forget which calls were already inspected."""
+        self._seen = 0
+
+    def observe(self, view: StreamView) -> Signal | None:
+        """Abort on the first call whose arguments contain a denied fragment."""
+        for call in view.tool_calls[self._seen :]:
+            self._seen += 1
+            blob = _tool_call_blob(call)
+            lowered = blob.lower()
+            for fragment in self.deny:
+                if fragment in lowered:
+                    name = ((call.get("function") or {}).get("name")) or call.get("name") or ""
+                    return Signal(
+                        Action.ABORT,
+                        self.name,
+                        f"tool {name!r} argument matched blocked fragment {fragment!r}",
+                        view.index,
+                        view.elapsed_s,
+                    )
+        return None
+
+
+def _tool_call_blob(call: dict[str, Any]) -> str:
+    """Serialise one tool call's name and arguments for pattern matching."""
+    function = call.get("function") or {}
+    name = function.get("name") or call.get("name") or ""
+    arguments = function.get("arguments") or call.get("arguments") or ""
+    if isinstance(arguments, dict):
+        arguments = json.dumps(arguments)
+    return f"{name} {arguments}"
 
 
 class ToolDeny(Monitor):

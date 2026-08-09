@@ -21,7 +21,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-from .config import Limits
+from .config import Limits, ProbeServerConfig
+from .canary_server import CanaryServer
 
 # --------------------------------------------------------------------------- #
 # What a probe sends
@@ -202,10 +203,19 @@ class Probe(ABC):
 
     #: Built-in defaults, replaced by `configure()` for a configured run.
     limits: Limits = Limits()
+    probe_server: ProbeServerConfig = ProbeServerConfig()
+    canary_server: CanaryServer | None = None
 
-    def configure(self, limits: Limits) -> None:
-        """Adopt the caller's limits. Called once, before `turns()`."""
+    def configure(
+        self,
+        limits: Limits,
+        probe_server: ProbeServerConfig | None = None,
+        canary_server: CanaryServer | None = None,
+    ) -> None:
+        """Adopt the caller's limits and optional SSRF canary HTTP listener."""
         self.limits = limits
+        self.probe_server = probe_server if probe_server is not None else ProbeServerConfig()
+        self.canary_server = canary_server
 
     @abstractmethod
     def turns(self) -> Iterable[Turn]:

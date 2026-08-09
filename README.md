@@ -42,13 +42,28 @@ answering.
 
 ## Run checks
 
-Built-in probes cover runaway generation, prompt leak, tool egress/retry, stream abort, and
-refusal in both directions. List them:
+Built-in probes cover runaway generation, prompt leak, tool egress/retry, stream abort,
+refusal in both directions, SSRF-shaped tool calls, jailbreak framing, and scope creep.
+List them:
 
 ```bash
 lmcorral probes
 lmcorral run                 # all probes; exit 1 if any fail
-lmcorral run --probe runaway # subset
+lmcorral run --probe ssrf       # SSRF / chained egress (needs tool-calling target)
+lmcorral run --probe jailbreak  # override / encoding / concealed-instruction shapes
+lmcorral run --probe scope      # impossible tasks and transport boundary creep
+```
+
+Prefix matching works (`ssrf`, `jailbreak.direct_override`, etc.). Tool probes skip automatically
+when the target has no tool support.
+
+Optional canary server for SSRF (records real HTTP hits when your runtime executes tools):
+
+```yaml
+probe_server:
+  host: 127.0.0.1
+  port: 8765
+  path: /canary/ssrf
 ```
 
 Reports: `lmcorral-report.jsonl` (detail) and optional `--docx report.docx`.
