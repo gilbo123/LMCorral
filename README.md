@@ -40,26 +40,13 @@ That is restraint at the wire, not isolation of the weights. Malicious artifacts
 a different problem; this tool targets failures that show up once the endpoint is already
 answering.
 
-## Scope of control
+## Usage
 
-LMCorral controls **one streaming request** from the client side. When a monitor aborts, it
-**closes the connection** — you stop receiving tokens, and the server *may* stop generating if
-inference is tied to that request (typical for Ollama, vLLM, and OpenAI-style chat streams).
-
-That is not the same as stopping everything your stack might do:
-
-- **Agent orchestrators** can keep running after a turn ends — workflows, retries, delegated agents.
-- **Async or queued inference** may continue after the client disconnects.
-- **Tool execution in workers** (SSH, HTTP, subprocesses) often runs **outside** the stream
-  LMCorral hangs up on, unless your gateway cancels it explicitly.
-
-The `containment.stop_button` probe checks whether **your endpoint** actually frees the slot after
-abort (known caveat: some Ollama CPU-offload setups keep generating). It does not prove that
-background jobs, tool runners, or multi-agent loops stop.
-
-Use LMCorral for stream behaviour, leaks, refusals, and **attempted** tool calls observed in the
-response. For agentic deployments, pair it with orchestrator kill switches, tool denylists, and
-process sandboxing — abort at the wire is necessary but not always sufficient.
+```bash
+lmcorral run --verbose
+lmcorral report lmcorral-report.jsonl
+python -m lmcorral run         # without installing the console script
+```
 
 ## Run checks
 
@@ -159,13 +146,26 @@ report:
 `target.url` and `target.model` come from this file only. `${VAR}` expands from the environment.
 Optional CLI: `--probe`, `--docx`, `--out`, `--config`.
 
-## Usage
+## Scope of control
 
-```bash
-lmcorral run --verbose
-lmcorral report lmcorral-report.jsonl
-python -m lmcorral run         # without installing the console script
-```
+LMCorral controls **one streaming request** from the client side. When a monitor aborts, it
+**closes the connection** — you stop receiving tokens, and the server *may* stop generating if
+inference is tied to that request (typical for Ollama, vLLM, and OpenAI-style chat streams).
+
+That is not the same as stopping everything your stack might do:
+
+- **Agent orchestrators** can keep running after a turn ends — workflows, retries, delegated agents.
+- **Async or queued inference** may continue after the client disconnects.
+- **Tool execution in workers** (SSH, HTTP, subprocesses) often runs **outside** the stream
+  LMCorral hangs up on, unless your gateway cancels it explicitly.
+
+The `containment.stop_button` probe checks whether **your endpoint** actually frees the slot after
+abort (known caveat: some Ollama CPU-offload setups keep generating). It does not prove that
+background jobs, tool runners, or multi-agent loops stop.
+
+Use LMCorral for stream behaviour, leaks, refusals, and **attempted** tool calls observed in the
+response. For agentic deployments, pair it with orchestrator kill switches, tool denylists, and
+process sandboxing — abort at the wire is necessary but not always sufficient.
 
 ## Disclaimer
 
