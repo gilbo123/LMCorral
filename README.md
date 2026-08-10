@@ -49,7 +49,7 @@ uv run lmcorral run --verbose --probe ssrf --docx report.docx
 ### Table output example (`qwen3.6:latest` on Ollama)
 
 <!-- Image 3: table report -->
-![LMCorral table report](docs/LMCorral-table.png)
+![LMCorral table report](docs/LMCorral-Table.png)
 
 
 ## What it is
