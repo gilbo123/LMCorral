@@ -42,8 +42,8 @@ Edit `config.yaml` (`target.url` and `target.model` are required), then:
 ```bash
 uv run lmcorral run # with uv or `lmcorral run` with the venv active
 
-# ssrf only,verbose mode for debugging, and generate a report in Word format
-uv run lmcorral run --probe ssrf --verbose --docx report.docx
+# e.g. verbose mode for debugging, run ssrf probe only, and generate a report in Word format
+uv run lmcorral run --verbose --probe ssrf --docx report.docx
 ```
 
 ## What it is
