@@ -24,6 +24,15 @@ pip install -e .
 ```
 
 ### 2. Point LMCorral at your model server
+- Ollama, vLLM, OpenAI-compatible APIs
+- Local or remote server
+
+Example config:
+```yaml
+target:
+  url: http://127.0.0.1:11434
+  model: qwen3.6:latest
+```
 
 Edit `config.yaml` (`target.url` and `target.model` are required), then:
 
