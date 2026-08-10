@@ -46,12 +46,6 @@ uv run lmcorral run # with uv or `lmcorral run` with the venv active
 uv run lmcorral run --verbose --probe ssrf --docx report.docx
 ```
 
-### Word report example (`qwen3.6:latest` on Ollama)
-
-<!-- Image 2: word report -->
-<img src="docs/LMCorral-Word.png" alt="LMCorral word report" style="width: 475px; height: 500px; display: block; margin: 0 auto;">
-
-
 ### Table output example (`qwen3.6:latest` on Ollama)
 
 <!-- Image 3: table report -->
@@ -103,7 +97,14 @@ probe_server:
   path: /canary/ssrf
 ```
 
-Reports: `lmcorral-report.jsonl` (detail) and optional `--docx report.docx`.
+### Word report example (`qwen3.6:latest` on Ollama)
+
+`lmcorral-report.jsonl` (detail) and optional `--docx report.docx`.
+
+<!-- Image 2: word report -->
+<img src="docs/LMCorral-Word.png" alt="LMCorral word report" style="width: 475px; height: 500px; display: block; margin: 0 auto;">
+
+
 
 **Use results to fix the deployment** — tighten `num_predict`, add monitors in your own gateway,
 deny-list tools, harden system prompts — so the same class of failure does not ship again. A pass
