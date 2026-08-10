@@ -26,26 +26,30 @@ pip install -e .
 ```
 
 ### 2. Point LMCorral at your model server
-- Ollama, vLLM, OpenAI-compatible APIs
-- Local or remote server
 
-Example config:
+Pass the endpoint on the command line (works from any directory after `pip install`):
+
+```bash
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
+```
+
+Or put defaults in `config.yaml` in the directory where you run the tool:
+
 ```yaml
 target:
   url: http://127.0.0.1:11434
   model: qwen3.6:latest
 ```
 
-Edit `config.yaml` (`target.url` and `target.model` are required), then:
-
+CLI `--target` and `--model` override the config file when both are set.
 
 ### 3. Run
 
 ```bash
-uv run lmcorral run # with uv or `lmcorral run` with the venv active
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
 
-# e.g. verbose mode for debugging, run ssrf probe only, and generate a report in Word format
-uv run lmcorral run --verbose --probe ssrf --docx report.docx
+# with config.yaml for limits/reports; override target on the CLI if you prefer
+lmcorral run --verbose --probe ssrf --docx report.docx
 ```
 
 ### Table output example (`qwen3.6:latest` on Ollama)
@@ -158,13 +162,23 @@ class MyProbe(Probe):
 
 ## Configuration
 
-One file: `config.yaml` in the directory where you run the tool.
+`config.yaml` is **optional**. Use it for limits, reports, custom probes, and default
+`target` settings. The file is read from the current directory (or `--config path`) when
+present.
+
+**Target** (required for `run`, one of):
+
+- `--target URL` and `--model NAME` on the command line
+- `target.url` and `target.model` in `config.yaml`
+
+CLI flags override the config file. This matches common CLI tools (`curl`, `kubectl`,
+database clients): point at a server per invocation without installing config files.
 
 ```yaml
 target:
-  url: http://127.0.0.1:11434   # required
-  model: qwen3.6:latest         # required
-  api_key: "${OPENAI_API_KEY}"  # OpenAI-compatible endpoints only
+  url: http://127.0.0.1:11434
+  model: qwen3.6:latest
+  api_key: "${OPENAI_API_KEY}"   # OpenAI-compatible endpoints only
 
 limits:
   token_budget: 600
@@ -172,11 +186,11 @@ limits:
 
 report:
   jsonl: lmcorral-report.jsonl
-  docx: null                    # or report.docx
+  docx: null
 ```
 
-`target.url` and `target.model` come from this file only. `${VAR}` expands from the environment.
-Optional CLI: `--probe`, `--docx`, `--out`, `--config`.
+`${VAR}` expands from the environment. Other optional CLI flags: `--probe`, `--docx`,
+`--out`, `--config`.
 
 ## Scope of control
 

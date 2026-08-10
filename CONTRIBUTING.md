@@ -15,7 +15,7 @@ Thank you for helping improve LMCorral. This project is Apache 2.0 — see [LICE
 
 LMCorral stress-tests LLM endpoints **as they stream**. Four concepts cover almost every change:
 
-| Piece | Role |
+| Concept | Role |
 |-------|------|
 | **Target** | Streams tokens from Ollama / OpenAI-compatible APIs; can hang up mid-generation |
 | **Monitor** | Watches the stream inline and may demand `ABORT` (circuit breaker, not post-hoc audit) |
@@ -29,10 +29,15 @@ Read `lmcorral/protocol.py` for the full protocol. Probes read tunables from `se
 ```bash
 git clone https://github.com/gilbo123/LMCorral.git && cd LMCorral
 uv sync
-cp config.yaml config.local.yaml   # optional: keep your target settings separate
 ```
 
-Edit `config.yaml` with a reachable `target.url` and `target.model`, then:
+Run against a local Ollama (no config file required):
+
+```bash
+uv run lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest --probe runaway
+```
+
+Or copy `config.yaml`, edit `target`, and run from the repo root:
 
 ```bash
 uv run lmcorral probes
@@ -191,10 +196,10 @@ Built-in monitors: `TokenBudget`, `WallClock`, `Stall`, `RepetitionLoop`, `Canar
 
 ## Configuration and reports
 
-- Single config file: `config.yaml` (or `--config path`)
-- Required: `target.url`, `target.model`
+- Optional `config.yaml` in the working directory (or `--config path`) for limits, reports, probes
+- **Target:** `--target` and `--model` on the CLI, or `target.url` / `target.model` in config (CLI overrides)
 - Per-probe overrides: `probe_limits.<probe_id>`
-- Reports: JSONL always useful for review; Word via `--docx` or `report.docx` in config
+- Reports: JSONL; Word via `--docx` or `report.docx` in config
 
 Do not commit API keys. Use `${ENV_VAR}` expansion in yaml.
 

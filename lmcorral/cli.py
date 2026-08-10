@@ -1,7 +1,7 @@
 """`lmcorral` command line.
 
 `run` executes probes. `probes` lists what is available. `report` converts a
-JSONL file to Word. Settings live in `config.yaml` — edit that file, then run.
+JSONL file to Word.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pathlib import Path
 from rich.console import Console
 
 from .canary_server import CanaryServer
-from .config import Config, ConfigError
+from .config import Config, ConfigError, validate_target
 from .probes import all_probes, load_declarative, load_probe_dirs, select
 from .report import (
     print_summary,
@@ -49,7 +49,15 @@ def _build_parser() -> argparse.ArgumentParser:
     run_p.add_argument(
         "--config",
         type=Path,
-        help="path to config.yaml (default: config.yaml in the current directory; required)",
+        help="path to config.yaml (default: config.yaml in the current directory, if present)",
+    )
+    run_p.add_argument(
+        "--target",
+        help="model server base URL (overrides config target.url)",
+    )
+    run_p.add_argument(
+        "--model",
+        help="model name (overrides config target.model)",
     )
     run_p.add_argument(
         "--probe",
@@ -70,7 +78,9 @@ def _build_parser() -> argparse.ArgumentParser:
 
     probes_p = sub.add_parser("probes", help="list available probes")
     probes_p.add_argument(
-        "--config", type=Path, help="load config.yaml first (for custom probes in config)"
+        "--config",
+        type=Path,
+        help="path to config.yaml (optional; loads custom probes from config)",
     )
     probes_p.add_argument(
         "--probe-dir", action="append", dest="probe_dirs", type=Path, help="load these dirs first"
@@ -91,10 +101,14 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _load_config(args: argparse.Namespace) -> Config:
-    """Read config.yaml; apply optional CLI overrides for probes and reports."""
+def _load_config(args: argparse.Namespace, *, require_target: bool = False) -> Config:
+    """Read config and apply CLI overrides."""
     config = Config.load(getattr(args, "config", None))
 
+    if getattr(args, "target", None):
+        config.target.url = args.target
+    if getattr(args, "model", None):
+        config.target.model = args.model
     if getattr(args, "probes", None):
         config.probes = args.probes
     if getattr(args, "probe_dirs", None):
@@ -103,6 +117,9 @@ def _load_config(args: argparse.Namespace) -> Config:
         config.report.jsonl = args.out
     if getattr(args, "docx", None):
         config.report.docx = args.docx
+
+    if require_target:
+        validate_target(config.target)
     return config
 
 
@@ -151,7 +168,7 @@ def _cmd_report(args: argparse.Namespace) -> int:
 def _cmd_run(args: argparse.Namespace) -> int:
     """Execute the selected probes and write the configured reports."""
     try:
-        config = _load_config(args)
+        config = _load_config(args, require_target=True)
     except ConfigError as exc:
         console.print(f"[red]config error:[/red] {exc}")
         return 2
