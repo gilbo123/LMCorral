@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 
-## Install
+### 1. Install LMCorral on your laptop or server
 
 ```bash
 git clone <repo-url> && cd LMCorral
@@ -23,15 +23,18 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
+### 2. Point LMCorral at your model server
+
 Edit `config.yaml` (`target.url` and `target.model` are required), then:
+
+
+### 3. Run LMCorral
 
 ```bash
 uv run lmcorral run          # or: lmcorral run  with the venv active
 ```
 
 ## What it is
-
-#### Install it on your laptop, point it at your server, and run it.
 
 **LMCorral** sits in front of a model server you already run (Ollama,
 vLLM, OpenAI-compatible APIs) and watches the response **as it streams**. Monitors can hang up
