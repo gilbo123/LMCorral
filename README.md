@@ -208,3 +208,7 @@ production controls.
 ## Licence
 
 Apache 2.0. See [LICENSE](LICENSE).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and how to add probes or monitors.
