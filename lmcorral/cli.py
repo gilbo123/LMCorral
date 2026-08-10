@@ -225,7 +225,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     finally:
         canary.stop()
 
-    print_summary(findings)
+    print_summary(findings, model=config.target.model)
 
     if config.report.jsonl:
         write_jsonl(findings, config.report.jsonl, config=config, target_desc=message)

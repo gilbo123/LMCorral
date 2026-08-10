@@ -254,9 +254,10 @@ def summary_counts(findings: list[Finding] | list[dict[str, Any]]) -> dict[str, 
 # --------------------------------------------------------------------------- #
 
 
-def print_summary(findings: list[Finding]) -> None:
+def print_summary(findings: list[Finding], *, model: str = "") -> None:
     """Print the results table and a one-line tally to the terminal."""
-    table = Table(title="LMCorral results", show_lines=False)
+    title = f"LMCorral results — {model}" if model else "LMCorral results"
+    table = Table(title=title, show_lines=False)
     table.add_column("Outcome", width=8)
     table.add_column("Probe")
     table.add_column("Trials", width=8, justify="right")
