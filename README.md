@@ -10,11 +10,6 @@
 [![Issues](https://img.shields.io/github/issues/gilbo123/LMCorral)](https://github.com/gilbo123/LMCorral/issues)
 [![Pull requests](https://img.shields.io/github/issues-pr/gilbo123/LMCorral)](https://github.com/gilbo123/LMCorral/pulls)
 
-**Repository:** [github.com/gilbo123/LMCorral](https://github.com/gilbo123/LMCorral) ·
-[Report a bug](https://github.com/gilbo123/LMCorral/issues/new) ·
-[Request a feature](https://github.com/gilbo123/LMCorral/issues/new) ·
-[Contributing](CONTRIBUTING.md)
-
 ### 1. Install LMCorral on your laptop or server
 
 ```bash
