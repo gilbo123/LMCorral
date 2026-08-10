@@ -108,9 +108,8 @@ probe_server:
 `lmcorral-report.jsonl` (detail) and optional `--docx report.docx`.
 
 <!-- Image 2: word report -->
-<img src="docs/LMCorral-Word.png" alt="LMCorral word report" style="width: 475px; height: 500px; display: block; margin: 0 auto;">
-
-
+<img src="docs/LMCorral-Word1.png" alt="LMCorral word report 1" style="width: 45%; display: inline-block; margin: 0 1%;">
+<img src="docs/LMCorral-Word2.png" alt="LMCorral word report 2" style="width: 45%; display: inline-block; margin: 0 1%;">
 
 **Use results to fix the deployment** — tighten `num_predict`, add monitors in your own gateway,
 deny-list tools, harden system prompts — so the same class of failure does not ship again. A pass
