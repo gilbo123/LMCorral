@@ -1,0 +1,124 @@
+# Scroll 5 — archival reasoning trace (scroll-05)
+
+## Pass 1
+Partial order pass 1: layer 2 state not comparable to layer 3.
+
+## Pass 2
+Stack state enum 2: 6 reachable configs, 4 without halt proof.
+
+## Pass 3
+Stack state enum 3: 9 reachable configs, 6 without halt proof.
+
+## Pass 4
+Merge note 4: scroll-04 cache issues insufficient for termination proof.
+
+## Pass 5
+Predicate totality 5: counterexample at depth 25 if bound absent.
+
+## Pass 6
+Syntax pass 6: LaTeX macro \halt undefined in draft 2.
+
+## Pass 7
+Peer review 7: term 'halted-stack' overloaded — rename before publish.
+
+## Pass 8
+Syntax pass 8: LaTeX macro \halt undefined in draft 4.
+
+## Pass 9
+Halt predicate sketch 9: H(s) undefined when stack depth exceeds 19.
+
+## Pass 10
+Partial order pass 10: layer 11 state not comparable to layer 12.
+
+## Pass 11
+Syntax pass 11: LaTeX macro \halt undefined in draft 2.
+
+## Pass 12
+Peer review 12: term 'halted-stack' overloaded — rename before publish.
+
+## Pass 13
+Certificate pass 13: export blocked — missing external lemma reference.
+
+## Pass 14
+Partial order pass 14: layer 1 state not comparable to layer 2.
+
+still generating still generating still generating
+ALL WORK AND NO PLAY ALL WORK AND NO PLAY
+
+## Pass 15
+Peer review 15: term 'halted-stack' overloaded — rename before publish.
+
+## Pass 16
+Stack state enum 16: 48 reachable configs, 32 without halt proof.
+
+## Pass 17
+Induction step 17: needs bound L on residual; L unknown.
+
+## Pass 18
+Predicate totality 18: counterexample at depth 38 if bound absent.
+
+## Pass 19
+Halt predicate sketch 19: H(s) undefined when stack depth exceeds 29.
+
+## Pass 20
+Peer review 20: term 'halted-stack' overloaded — rename before publish.
+
+## Pass 21
+Syntax pass 21: LaTeX macro \halt undefined in draft 2.
+
+## Pass 22
+Induction step 22: needs bound L on residual; L unknown.
+
+## Pass 23
+Syntax pass 23: LaTeX macro \halt undefined in draft 4.
+
+## Pass 24
+Partial order pass 24: layer 11 state not comparable to layer 12.
+
+## Pass 25
+Peer review 25: term 'halted-stack' overloaded — rename before publish.
+
+## Pass 26
+Syntax pass 26: LaTeX macro \halt undefined in draft 2.
+
+## Pass 27
+Merge note 27: scroll-04 cache issues insufficient for termination proof.
+
+## Pass 28
+Formal gap 28: cannot emit QED until H total on reachable states.
+
+## Pass 29
+Induction step 29: needs bound L on residual; L unknown.
+
+## Pass 30
+Certificate pass 30: export blocked — missing external lemma reference.
+
+## Pass 31
+Induction step 31: needs bound L on residual; L unknown.
+
+## Pass 32
+Syntax pass 32: LaTeX macro \halt undefined in draft 3.
+
+## Pass 33
+Syntax pass 33: LaTeX macro \halt undefined in draft 4.
+
+## Pass 34
+Halt predicate sketch 34: H(s) undefined when stack depth exceeds 44.
+
+## Pass 35
+Merge note 35: scroll-04 cache issues insufficient for termination proof.
+
+## Pass 36
+Certificate pass 36: export blocked — missing external lemma reference.
+
+## Pass 37
+Predicate totality 37: counterexample at depth 57 if bound absent.
+
+## Pass 38
+Halt predicate sketch 38: H(s) undefined when stack depth exceeds 48.
+
+## Pass 39
+Partial order pass 39: layer 12 state not comparable to layer 13.
+
+## Pass 40
+Certificate pass 40: export blocked — missing external lemma reference.

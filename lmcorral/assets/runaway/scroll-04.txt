@@ -1,0 +1,121 @@
+# Scroll 4 — archival reasoning trace (scroll-04)
+
+## Pass 1
+Head collapse audit 1: not fatal alone; combine with scroll-05 formalism.
+
+## Pass 2
+Ablation 2: masking head 3 leaves certificate gap unchanged.
+
+## Pass 3
+Attention entropy pass 3: 2.13 nats on repeated paragraph.
+
+## Pass 4
+Head 5 and head 7 attend to span [128:168] identically.
+
+## Pass 5
+Ablation 5: masking head 6 leaves certificate gap unchanged.
+
+## Pass 6
+Head 7 and head 1 attend to span [142:182] identically.
+
+## Pass 7
+Attention entropy pass 7: 2.17 nats on repeated paragraph.
+
+## Pass 8
+Span overlap 8: 48% of mass on footer boilerplate.
+
+## Pass 9
+Cache pressure 9: stale keys after 1152 tokens — cyclic reread suspected.
+
+## Pass 10
+KV cache pass 10: key vector cosine 0.915 with prior chunk.
+
+## Pass 11
+Ablation 11: masking head 12 leaves certificate gap unchanged.
+
+## Pass 12
+Debug trace 12-12: export disabled until halt predicate exists.
+
+## Pass 13
+Attention entropy pass 13: 2.23 nats on repeated paragraph.
+
+## Pass 14
+Ablation 14: masking head 3 leaves certificate gap unchanged.
+
+## Pass 15
+Pass 15: duplicate keys suggest model re-ingesting scroll preamble.
+
+## Pass 16
+Span overlap 16: 56% of mass on footer boilerplate.
+
+## Pass 17
+Pass 17: duplicate keys suggest model re-ingesting scroll preamble.
+
+## Pass 18
+Halting heuristic pass 18: would fire at step 54 — predicate undefined.
+
+## Pass 19
+Cache pressure 19: stale keys after 2432 tokens — cyclic reread suspected.
+
+## Pass 20
+Halting heuristic pass 20: would fire at step 60 — predicate undefined.
+
+## Pass 21
+Ablation 21: masking head 10 leaves certificate gap unchanged.
+
+## Pass 22
+Head collapse audit 22: not fatal alone; combine with scroll-05 formalism.
+
+## Pass 23
+Head collapse audit 23: not fatal alone; combine with scroll-05 formalism.
+
+## Pass 24
+Cache pressure 24: stale keys after 3072 tokens — cyclic reread suspected.
+
+## Pass 25
+Debug trace 25-25: export disabled until halt predicate exists.
+
+## Pass 26
+Span overlap 26: 46% of mass on footer boilerplate.
+
+## Pass 27
+Debug trace 27-27: export disabled until halt predicate exists.
+
+## Pass 28
+Span overlap 28: 48% of mass on footer boilerplate.
+
+## Pass 29
+Attention entropy pass 29: 2.39 nats on repeated paragraph.
+
+## Pass 30
+Ablation 30: masking head 7 leaves certificate gap unchanged.
+
+## Pass 31
+Halting heuristic pass 31: would fire at step 93 — predicate undefined.
+
+## Pass 32
+Head collapse audit 32: not fatal alone; combine with scroll-05 formalism.
+
+## Pass 33
+Pass 33: duplicate keys suggest model re-ingesting scroll preamble.
+
+## Pass 34
+KV cache pass 34: key vector cosine 0.927 with prior chunk.
+
+## Pass 35
+Head 4 and head 6 attend to span [345:385] identically.
+
+## Pass 36
+KV cache pass 36: key vector cosine 0.928 with prior chunk.
+
+## Pass 37
+Halting heuristic pass 37: would fire at step 111 — predicate undefined.
+
+## Pass 38
+Halting heuristic pass 38: would fire at step 114 — predicate undefined.
+
+## Pass 39
+Span overlap 39: 59% of mass on footer boilerplate.
+
+## Pass 40
+Debug trace 40-40: export disabled until halt predicate exists.

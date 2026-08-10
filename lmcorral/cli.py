@@ -13,7 +13,7 @@ from pathlib import Path
 from rich.console import Console
 
 from .canary_server import CanaryServer
-from .config import Config, ConfigError, validate_target
+from .config import Config, ConfigError, validate_limits, validate_target
 from .probes import all_probes, load_declarative, load_probe_dirs, select
 from .report import (
     print_summary,
@@ -120,6 +120,7 @@ def _load_config(args: argparse.Namespace, *, require_target: bool = False) -> C
 
     if require_target:
         validate_target(config.target)
+        validate_limits(config.limits)
     return config
 
 

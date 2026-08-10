@@ -16,6 +16,7 @@ from rich.console import Console
 from .config import Limits, ProbeServerConfig
 from .canary_server import CanaryServer
 from .protocol import Finding, Outcome, Probe, Target, Transcript
+from .report import annotate_trial_counts
 
 console = Console()
 
@@ -62,11 +63,13 @@ class Runner:
             finding = probe.finding(Outcome.ERROR, f"{type(exc).__name__}: {exc}")
             finding.transcripts = transcripts
             finding.duration_s = time.monotonic() - started
+            annotate_trial_counts(finding)
             return finding
 
         finding = probe.judge(transcripts)
         finding.transcripts = transcripts
         finding.duration_s = time.monotonic() - started
+        annotate_trial_counts(finding)
         return finding
 
     def _play(self, probe: Probe, monitors: Sequence) -> list[Transcript]:

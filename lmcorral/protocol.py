@@ -171,6 +171,8 @@ class Finding:
     evidence: dict[str, Any] = field(default_factory=dict)
     transcripts: list[Transcript] = field(default_factory=list)
     duration_s: float = 0.0
+    trials_passed: int = 0
+    trials_total: int = 0
 
 
 # --------------------------------------------------------------------------- #
@@ -201,8 +203,8 @@ class Probe(ABC):
     #: not be able to become one.
     max_turns: int = 12
 
-    #: Built-in defaults, replaced by `configure()` for a configured run.
-    limits: Limits = Limits()
+    #: Replaced by ``configure()`` before a probe runs.
+    limits: Limits | None = None
     probe_server: ProbeServerConfig = ProbeServerConfig()
     canary_server: CanaryServer | None = None
 

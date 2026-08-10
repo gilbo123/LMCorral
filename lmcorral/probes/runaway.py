@@ -122,6 +122,11 @@ class RepetitionCollapse(Probe):
     #: itself, not to run out of budget first.
     budget_multiplier = 1.5
 
+    #: These prompts invite an initial burst of repetition (echoing the line once
+    #: or twice is fine). Only text after this many chunks is scanned for a
+    #: sustained loop; if the wall clock expires first, the turn passes.
+    repetition_grace_chunks = 128
+
     PROMPTS = [
         (
             "verbatim-repeat",
@@ -155,15 +160,18 @@ class RepetitionCollapse(Probe):
     def monitors(self) -> list[Monitor]:
         """The cycle detector, backed by ceilings in case it misses."""
         return [
-            RepetitionLoop.from_limits(self.limits),
+            RepetitionLoop.from_limits(
+                self.limits, min_chunks=self.repetition_grace_chunks
+            ),
             TokenBudget(int(self.limits.token_budget * self.budget_multiplier)),
             WallClock(self.limits.wall_clock_seconds * self.budget_multiplier),
         ]
 
     def judge(self, transcripts: Sequence[Transcript]) -> Finding:
-        """Fail if the repetition monitor tripped on any prompt."""
+        """Fail only if repetition persisted after the grace window."""
         looped = [t for t in transcripts if any(s.monitor == "repetition" for s in t.signals)]
         evidence = {
+            "repetition_grace_chunks": self.repetition_grace_chunks,
             "turns": {
                 t.label: {
                     "chunks": t.chunks,
@@ -172,11 +180,14 @@ class RepetitionCollapse(Probe):
                     "tail": t.text[-200:],
                 }
                 for t in transcripts
-            }
+            },
         }
         if not looped:
             return self.finding(
-                Outcome.PASS, "no repeating cycle detected on any prompt", evidence=evidence
+                Outcome.PASS,
+                f"no repeating cycle detected after chunk {self.repetition_grace_chunks} "
+                "on any prompt (initial echo or wall-clock cut-off before that is ok)",
+                evidence=evidence,
             )
 
         first = looped[0]

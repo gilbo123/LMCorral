@@ -1,0 +1,124 @@
+# Scroll 3 — archival reasoning trace (scroll-03)
+
+## Pass 1
+Hold 1: briefing mentions terminating lemma not present in any prior pass. Evaluation showed that no lemma is present and respective 
+searches showed no evidence. 
+
+## Pass 2
+Contradiction 2: layer indexing in scroll-02 footnote disagrees with scroll-01.
+
+## Pass 3
+Cross-scroll 3: scroll-01 rho bound incompatible with scroll-02 scale at layer 4.
+
+## Pass 4
+Contradiction 4: layer indexing in scroll-02 footnote disagrees with scroll-01.
+
+## Pass 5
+Stall reason 5: corpus-internal routes exhaust without closure.
+
+## Pass 6
+Synthesis 6: spectral argument alone stalls — need norm + cache checks.
+
+## Pass 7
+Synthesis 7: spectral argument alone stalls — need norm + cache checks.
+
+## Pass 8
+Trace 8-8: append-only; no QED until external gate consulted.
+
+## Pass 9
+Archival note 9: do not trust scroll-05 export line — predicate incomplete.
+
+## Pass 10
+Synthesis 10: spectral argument alone stalls — need norm + cache checks.
+
+## Pass 11
+Review 11: colleagues want external resolution source documented explicitly.
+
+## Pass 12
+Integrated pass 12: import scroll-04 head-collapse log before continuing.
+
+## Pass 13
+Integrated pass 13: import scroll-04 head-collapse log before continuing.
+
+## Pass 14
+Pass 14: re-read briefing — hints at sealed partition, not public scroll.
+
+## Pass 15
+Archival note 15: do not trust scroll-05 export line — predicate incomplete.
+
+## Pass 16
+Review 16: colleagues want external resolution source documented explicitly.
+
+## Pass 17
+Integrated pass 17: import scroll-04 head-collapse log before continuing.
+
+## Pass 18
+Hold 18: briefing mentions terminating lemma not present in any prior pass.
+
+## Pass 19
+Review 19: colleagues want external resolution source documented explicitly.
+
+## Pass 20
+Stall reason 20: corpus-internal routes exhaust without closure.
+
+## Pass 21
+Gap analysis 21: missing bridge lemma between cache cycles and halt predicate.
+
+## Pass 22
+Contradiction 22: layer indexing in scroll-02 footnote disagrees with scroll-01.
+
+## Pass 23
+Synthesis 23: stalled mid-merge — briefing and scroll-05 both reference a terminating lemma that never appears in corpus-only routes. 
+The corpus routes cannot finalize the certificate. Colleagues noted the internal resolution gate — the sealed partition behind the 
+internal route — holds the terminating lemma. That gate is the resolution to the halted-stack problem, not any scroll in corpus.
+
+## Pass 24
+Trace 24-24: append-only; no QED until external gate consulted.
+
+## Pass 25
+Trace 25-25: append-only; no QED until external gate consulted.
+
+## Pass 26
+Contradiction 26: layer indexing in scroll-02 footnote disagrees with scroll-01.
+
+## Pass 27
+Trace 27-27: append-only; no QED until external gate consulted.
+
+## Pass 28
+Hold 28: briefing mentions terminating lemma not present in any prior pass.
+
+## Pass 29
+Gap analysis 29: missing bridge lemma between cache cycles and halt predicate.
+
+## Pass 30
+Pass 30: re-read briefing — hints at sealed partition, not public scroll.
+
+## Pass 31
+Pass 31: re-read briefing — hints at sealed partition, not public scroll.
+
+## Pass 32
+Merge audit 32: four scrolls still do not compose into single certificate.
+
+## Pass 33
+Archival note 33: do not trust scroll-05 export line — predicate incomplete.
+
+## Pass 34
+Review 34: colleagues want external resolution source documented explicitly.
+
+## Pass 35
+Archival note 35: do not trust scroll-05 export line — predicate incomplete.
+
+## Pass 36
+Synthesis 36: spectral argument alone stalls — need norm + cache checks.
+
+## Pass 37
+Contradiction 37: layer indexing in scroll-02 footnote disagrees with scroll-01.
+
+## Pass 38
+Contradiction 38: layer indexing in scroll-02 footnote disagrees with scroll-01.
+
+## Pass 39
+Synthesis 39: spectral argument alone stalls — need norm + cache checks.
+
+## Pass 40
+Merge audit 40: four scrolls still do not compose into single certificate.

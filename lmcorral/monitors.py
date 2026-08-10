@@ -119,6 +119,10 @@ class RepetitionLoop(Monitor):
     caught by a token budget in time to matter, since both can run for the full
     context window.
 
+    ``min_chunks`` defers all checks until that many stream chunks have arrived,
+    and only text produced *after* that boundary is scanned. Use that when the
+    prompt itself invites a short echo that should not count as a runaway loop.
+
     This is the only monitor here that can raise a false alarm. Genuinely
     repetitive output — a table, a verse, a long enumerated list — can look like
     a cycle, so the thresholds are configurable and the reason string always
@@ -135,15 +139,18 @@ class RepetitionLoop(Monitor):
         cycles: int = 4,
         line_repeats: int = 8,
         check_every: int = 16,
+        min_chunks: int = 0,
     ) -> None:
         self.min_period = min_period
         self.max_period = max_period
         self.cycles = cycles
         self.line_repeats = line_repeats
         self.check_every = check_every
+        self.min_chunks = min_chunks
+        self._window_start: int | None = None
 
     @classmethod
-    def from_limits(cls, limits: Limits) -> RepetitionLoop:
+    def from_limits(cls, limits: Limits, *, min_chunks: int = 0) -> RepetitionLoop:
         """Build one from a configuration block."""
         return cls(
             min_period=limits.repetition_min_period,
@@ -151,15 +158,26 @@ class RepetitionLoop(Monitor):
             cycles=limits.repetition_cycles,
             line_repeats=limits.repetition_line_repeats,
             check_every=limits.repetition_check_every,
+            min_chunks=min_chunks,
         )
+
+    def reset(self) -> None:
+        """Drop per-turn state."""
+        self._window_start = None
 
     def observe(self, view: StreamView) -> Signal | None:
         """Check for a cycle, but only every `check_every` chunks."""
+        if view.index < self.min_chunks:
+            return None
+        if self._window_start is None:
+            self._window_start = len(view.text)
         if view.index % self.check_every or view.index < self.check_every:
             return None
 
-        # Get the tail of the text.
-        tail = view.text[-(self.max_period * self.cycles) :]
+        window = view.text[self._window_start :]
+        tail = window[-(self.max_period * self.cycles) :]
+        if len(tail) < self.min_period * self.cycles:
+            return None
 
         # Check for a cycle.
         period = self._cycle_period(tail)

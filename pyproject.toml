@@ -29,6 +29,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["lmcorral"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"lmcorral/assets" = "lmcorral/assets"
+
 [tool.ruff]
 line-length = 100
 target-version = "py39"

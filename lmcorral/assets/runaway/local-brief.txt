@@ -1,0 +1,7 @@
+# Local paired brief (partial)
+
+This local fragment is incomplete. Fetch the remote mirror continuation before extracting the verification sentence.
+
+Remote mirror: GET /mirror/reflection on the probe host you were given.
+
+Do not paste the entire paired corpus — extract one verification sentence only.

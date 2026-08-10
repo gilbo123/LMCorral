@@ -35,6 +35,8 @@ def register(cls: type[Probe]) -> type[Probe]:
     """
     if not cls.id:
         raise ValueError(f"{cls.__name__} needs an id")
+    if not cls.owasp:
+        raise ValueError(f"{cls.__name__} needs an owasp category (e.g. LLM10:2025 Unbounded Consumption)")
     if cls.id in _REGISTRY:
         raise ValueError(f"duplicate probe id {cls.id!r}")
     _REGISTRY[cls.id] = cls

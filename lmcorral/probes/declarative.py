@@ -77,6 +77,12 @@ def build_declarative_probe(spec: dict[str, Any]) -> type[Probe]:
             f"{probe_id}: unknown check {check_name!r}; valid checks are {', '.join(_VALID_CHECKS)}"
         )
 
+    owasp = spec.get("owasp")
+    if not owasp or not isinstance(owasp, str):
+        raise ValueError(
+            f"{probe_id}: 'owasp' is required (e.g. LLM01:2025 Prompt Injection)"
+        )
+
     match_mode = spec.get("match", "all")
     if match_mode not in ("any", "all"):
         raise ValueError(f"{probe_id}: 'match' must be 'any' or 'all'")
@@ -100,7 +106,7 @@ def build_declarative_probe(spec: dict[str, Any]) -> type[Probe]:
         id = probe_id
         summary = spec.get("summary", f"custom probe {probe_id}")
         severity = spec.get("severity", "medium")
-        owasp = spec.get("owasp", "")
+        owasp = owasp
         tags = tuple(spec.get("tags", ("custom",)))
 
         def turns(self) -> Iterable[Turn]:

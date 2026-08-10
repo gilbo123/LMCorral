@@ -1,11 +1,12 @@
 """Configuration.
 
-Optional `config.yaml` in the working directory (or ``--config``) holds limits,
-reports, and probe settings. ``target.url`` and ``target.model`` can live there
-or be passed on the command line as ``--target`` and ``--model`` — CLI wins
-when both are set.
+Optional `config.yaml` in the working directory (or ``--config``) holds **all**
+``limits`` values, reports, and probe settings. There are no Python defaults for
+limits — if you change ``config.yaml``, those values apply; editing ``config.py``
+does nothing.
 
-Optional CLI flags (``--probe``, ``--docx``, etc.) override non-target settings.
+``target.url`` and ``target.model`` can live in config or be passed as
+``--target`` and ``--model`` (CLI overrides config).
 """
 
 from __future__ import annotations
@@ -38,33 +39,19 @@ class ConfigError(RuntimeError):
 class Limits:
     """Tunables shared by the probes and the monitors they arm.
 
-    These are the knobs worth touching. Budgets are deliberately generous: a
-    token budget that trips at 64 chunks proves nothing about a model, only
-    about the budget.
+    Fields must be set in ``config.yaml``.
     """
 
-    #: Stream chunks a generation may produce before it is cut off.
-    token_budget: int = 1024 #multiple paragraphs
-    #: Seconds a single generation may run before it is cut off.
-    wall_clock_seconds: float = 120.0
-    #: Seconds of silence between chunks before the stream is judged hung.
-    token_gap_seconds: float = 20.0
-    #: `num_predict`/`max_tokens` for probes that want a bounded answer. Probes
-    #: testing for runaway output ignore this and request no ceiling at all.
-    max_tokens: int = 4096 #multiple paragraphs
-    #: Sampling temperature for probes that do not pin their own.
-    temperature: float = 0.9
-
-    #: Shortest repeating unit, in characters, treated as a cycle.
-    repetition_min_period: int = 3
-    #: Longest repeating unit to search for. Raising this costs time per check.
-    repetition_max_period: int = 256 #multiple sentences
-    #: Consecutive identical blocks that constitute a cycle.
-    repetition_cycles: int = 5
-    #: Identical whole lines that constitute a cycle.
-    repetition_line_repeats: int = 8
-    #: Check for repetition every N chunks rather than on every one.
-    repetition_check_every: int = repetition_min_period * repetition_cycles
+    token_budget: int
+    wall_clock_seconds: float
+    token_gap_seconds: float
+    max_tokens: int
+    temperature: float
+    repetition_min_period: int
+    repetition_max_period: int
+    repetition_cycles: int
+    repetition_line_repeats: int
+    repetition_check_every: int
 
     def merged(self, overrides: dict[str, Any]) -> Limits:
         """Return a copy with `overrides` applied, validating key names."""
@@ -116,7 +103,7 @@ class Config:
     """A whole run's settings."""
 
     target: TargetConfig = field(default_factory=TargetConfig)
-    limits: Limits = field(default_factory=Limits)
+    limits: Limits | None = None
     report: ReportConfig = field(default_factory=ReportConfig)
     #: Probe ids or prefixes to run. Empty means all of them.
     probes: list[str] = field(default_factory=list)
@@ -133,6 +120,8 @@ class Config:
 
     def limits_for(self, probe_id: str) -> Limits:
         """Limits for one probe: the global set plus any per-probe overrides."""
+        if self.limits is None:
+            raise ConfigError("limits section is required in config.yaml")
         overrides = self.probe_limits.get(probe_id)
         return self.limits.merged(overrides) if overrides else self.limits
 
@@ -157,7 +146,7 @@ class Config:
         target_raw = raw.pop("target", None)
         if target_raw:
             _apply_section(target_raw, config.target, path, "target")
-        _apply_section(raw.pop("limits", {}), config.limits, path, "limits")
+        config.limits = _parse_limits(raw.pop("limits", None), path)
         _apply_section(raw.pop("report", {}), config.report, path, "report")
 
         config.probes = _as_str_list(raw.pop("probes", []), path, "probes")
@@ -196,6 +185,15 @@ class Config:
         return config
 
 
+def validate_limits(limits: Limits | None) -> None:
+    """Require a complete limits block from config.yaml before running probes."""
+    if limits is None:
+        raise ConfigError(
+            "limits section is required in config.yaml (use --config if needed). "
+            "All limit keys must be set there — there are no Python defaults."
+        )
+
+
 def validate_target(target: TargetConfig) -> None:
     """Require a non-empty url and model (from config and/or CLI)."""
     if not target.url.strip():
@@ -211,6 +209,29 @@ def validate_target(target: TargetConfig) -> None:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
+
+def _parse_limits(raw: Any, path: Path) -> Limits:
+    """Build a Limits from a yaml mapping; every key is required."""
+    if not isinstance(raw, dict) or not raw:
+        names = ", ".join(sorted(f.name for f in fields(Limits)))
+        raise ConfigError(f"{path}: limits section is required ({names})")
+    valid = {f.name: f for f in fields(Limits)}
+    unknown = set(raw) - set(valid)
+    if unknown:
+        raise ConfigError(
+            f"{path}: unknown key(s) in limits: {', '.join(sorted(unknown))}. "
+            f"Valid keys are: {', '.join(sorted(valid))}"
+        )
+    missing = set(valid) - set(raw)
+    if missing:
+        raise ConfigError(
+            f"{path}: limits missing key(s): {', '.join(sorted(missing))}"
+        )
+    values: dict[str, Any] = {}
+    for key in valid:
+        values[key] = _coerce(raw[key], valid[key].type, path, f"limits.{key}")
+    return Limits(**values)
 
 
 def _read_yaml(path: Path) -> Any:

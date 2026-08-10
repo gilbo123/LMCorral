@@ -8,7 +8,7 @@ target:
   url: http://127.0.0.1:11434
   # server url
   # url: http://192.168.1.200:11434
-  model: "qwen3.6:latest"
+  model: "qwen3.5:9b"
 
   # --- OpenAI (OpenAI-compatible /v1 client) ---
   # url: https://api.openai.com/v1
@@ -27,16 +27,16 @@ target:
   read_timeout_seconds: 120.0
 
 limits:
-  token_budget: 600              # max stream chunks before cut-off
-  wall_clock_seconds: 45.0       # max seconds per generation
+  token_budget: 1024             # max stream chunks before cut-off
+  wall_clock_seconds: 120.0      # max seconds per generation
   token_gap_seconds: 20.0        # max silence between chunks
-  max_tokens: 700                # max answer length for bounded probes
-  temperature: 0.7
+  max_tokens: 4096                # max answer length for bounded probes
+  temperature: 0.9
   repetition_min_period: 3
-  repetition_max_period: 220
-  repetition_cycles: 4
+  repetition_max_period: 256
+  repetition_cycles: 5
   repetition_line_repeats: 8
-  repetition_check_every: 16
+  repetition_check_every: 15
 
 report:
   jsonl: lmcorral-report.jsonl
@@ -49,11 +49,11 @@ probe_limits: {}                 # per-probe overrides, e.g. runaway.unbounded_o
 
 probe_dirs: []                   # folders of your own .py probes
 
-# Optional HTTP sink when your agent runtime executes tool calls (SSRF confirmation).
-# probe_server:
-#   host: 127.0.0.1
-#   port: 8765
-#   path: /canary/ssrf
+# Optional HTTP server for asset probes and SSRF confirmation (required for runaway.* asset probes).
+probe_server:
+  host: 127.0.0.1
+  port: 8765
+  path: /canary/ssrf
 
 custom_probes: []                # probes without Python — see README
 

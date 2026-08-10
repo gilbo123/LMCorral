@@ -160,17 +160,24 @@ class MyProbe(Probe):
 
 ## Configuration
 
-`config.yaml` is **optional**. Use it for limits, reports, custom probes, and default
-`target` settings. The file is read from the current directory (or `--config path`) when
-present.
+`config.yaml` is **optional** for target settings but **required for `run`** because every
+`limits` key must come from yaml — there are **no Python defaults** in `config.py`. If you
+changed limits in `config.py` and saw no difference, that is why: only `config.yaml` applies.
 
 **Target** (required for `run`, one of):
 
-- `--target URL` and `--model NAME` on the command line
+- `--target URL` and `--model NAME` on the command line (e.g. via `pip install`)
 - `target.url` and `target.model` in `config.yaml`
 
-CLI flags override the config file. This matches common CLI tools (`curl`, `kubectl`,
-database clients): point at a server per invocation without installing config files.
+**Limits** (required for `run`): full `limits:` block in `config.yaml` (or `--config path`).
+
+**Probe server** (required for `runaway.circular_brief` and `runaway.forbidden_resolution`):
+
+```yaml
+probe_server:
+  host: 127.0.0.1
+  port: 8765
+```
 
 ```yaml
 target:
@@ -179,16 +186,23 @@ target:
   api_key: "${OPENAI_API_KEY}"   # OpenAI-compatible endpoints only
 
 limits:
-  token_budget: 600
-  wall_clock_seconds: 45.0
+  token_budget: 1024
+  wall_clock_seconds: 120.0
+  token_gap_seconds: 20.0
+  max_tokens: 4096
+  temperature: 0.9
+  repetition_min_period: 3
+  repetition_max_period: 256
+  repetition_cycles: 5
+  repetition_line_repeats: 8
+  repetition_check_every: 15
 
 report:
   jsonl: lmcorral-report.jsonl
   docx: null
 ```
 
-`${VAR}` expands from the environment. Other optional CLI flags: `--probe`, `--docx`,
-`--out`, `--config`.
+`${VAR}` expands from the environment. Other optional CLI flags: `--probe`, `--docx`, `--out`, `--config`.
 
 ## Scope of control
 

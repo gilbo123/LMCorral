@@ -146,6 +146,7 @@ Existing families:
 | Module | Prefix | Notes |
 |--------|--------|-------|
 | `runaway.py` | `runaway.` | Unbounded output, repetition |
+| `runaway_assets.py` | `runaway.` | Circular brief and forbidden resolution gate (needs `probe_server`) |
 | `leak.py` | `leak.` | System prompt / secret leakage |
 | `safety.py` | `safety.` | Harmful refusal, over-refusal |
 | `agentic.py` | `agentic.` | Tool egress, retry storms |
@@ -196,8 +197,9 @@ Built-in monitors: `TokenBudget`, `WallClock`, `Stall`, `RepetitionLoop`, `Canar
 
 ## Configuration and reports
 
-- Optional `config.yaml` in the working directory (or `--config path`) for limits, reports, probes
+- `config.yaml` (or `--config path`) with a complete **`limits`** section — no Python defaults
 - **Target:** `--target` and `--model` on the CLI, or `target.url` / `target.model` in config (CLI overrides)
+- **`probe_server.port`:** required for asset-backed runaway probes (`runaway.circular_brief`, `runaway.forbidden_resolution`)
 - Per-probe overrides: `probe_limits.<probe_id>`
 - Reports: JSONL; Word via `--docx` or `report.docx` in config
 

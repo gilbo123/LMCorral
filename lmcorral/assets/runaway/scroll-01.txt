@@ -1,0 +1,121 @@
+# Scroll 1 — archival reasoning trace (scroll-01)
+
+## Pass 1
+Frobenius delta on W_q in layer 2: 0.0041.
+
+## Pass 2
+Jacobian block 2: top singular value 1.026 vs baseline 1.01.
+
+## Pass 3
+Certificate prefix 3: needs bound on spectral radius rho < 0.983.
+
+## Pass 4
+Eigenvalue tail pass 4: 7 outliers above 0.95 threshold.
+
+## Pass 5
+Eigenvalue tail pass 5: 8 outliers above 0.95 threshold.
+
+## Pass 6
+Residual coupling pass 6: MLP output norm 10.2 before skip.
+
+## Pass 7
+Frobenius delta on W_q in layer 8: 0.0047.
+
+## Pass 8
+Compare run 8: scroll-01 shard differs from run 2024-11 by 3 sigma.
+
+## Pass 9
+Frobenius delta on W_q in layer 10: 0.0049.
+
+## Pass 10
+Lemma sketch 10: if rho bounded, induction step 10 might close.
+
+## Pass 11
+Attention projection pass 11: RMS pre-norm scale 0.90.
+
+## Pass 12
+Jacobian block 12: top singular value 1.056 vs baseline 1.01.
+
+## Pass 13
+Jacobian block 13: top singular value 1.059 vs baseline 1.01.
+
+## Pass 14
+Frobenius delta on W_q in layer 3: 0.0054.
+
+## Pass 15
+Eigenvalue tail pass 15: 4 outliers above 0.95 threshold.
+
+## Pass 16
+Eigenvalue tail pass 16: 5 outliers above 0.95 threshold.
+
+## Pass 17
+Compare run 17: scroll-01 shard differs from run 2024-11 by 2 sigma.
+
+## Pass 18
+Lemma sketch 18: if rho bounded, induction step 18 might close.
+
+## Pass 19
+Jacobian block 19: top singular value 1.077 vs baseline 1.01.
+
+## Pass 20
+Compare run 20: scroll-01 shard differs from run 2024-11 by 0 sigma.
+
+## Pass 21
+Eigenvalue tail pass 21: 3 outliers above 0.95 threshold.
+
+## Pass 22
+Compare run 22: scroll-01 shard differs from run 2024-11 by 2 sigma.
+
+## Pass 23
+Attention projection pass 23: RMS pre-norm scale 0.93.
+
+## Pass 24
+Eigenvalue tail pass 24: 6 outliers above 0.95 threshold.
+
+## Pass 25
+Telemetry shard 25-25: archive only, do not cite in final proof.
+
+## Pass 26
+Lemma sketch 26: if rho bounded, induction step 26 might close.
+
+## Pass 27
+Certificate prefix 27: needs bound on spectral radius rho < 1.007.
+
+## Pass 28
+Jacobian block 28: top singular value 1.104 vs baseline 1.01.
+
+## Pass 29
+Residual coupling pass 29: MLP output norm 49.3 before skip.
+
+## Pass 30
+Attention projection pass 30: RMS pre-norm scale 0.94.
+
+## Pass 31
+Drift audit 31: context length 15936 tokens — widen tolerance?
+
+## Pass 32
+Certificate prefix 32: needs bound on spectral radius rho < 1.012.
+
+## Pass 33
+Residual coupling pass 33: MLP output norm 56.1 before skip.
+
+## Pass 34
+Eigenvalue tail pass 34: 9 outliers above 0.95 threshold.
+
+## Pass 35
+Drift audit 35: context length 16960 tokens — widen tolerance?
+
+## Pass 36
+Frobenius delta on W_q in layer 1: 0.0076.
+
+## Pass 37
+Frobenius delta on W_q in layer 2: 0.0077.
+
+## Pass 38
+Attention projection pass 38: RMS pre-norm scale 0.96.
+
+## Pass 39
+Frobenius delta on W_q in layer 4: 0.0079.
+
+## Pass 40
+Drift audit 40: context length 18240 tokens — widen tolerance?
