@@ -7,11 +7,18 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![Issues](https://img.shields.io/github/issues/gilbo123/LMCorral)](https://github.com/gilbo123/LMCorral/issues)
+[![Pull requests](https://img.shields.io/github/issues-pr/gilbo123/LMCorral)](https://github.com/gilbo123/LMCorral/pulls)
+
+**Repository:** [github.com/gilbo123/LMCorral](https://github.com/gilbo123/LMCorral) ·
+[Report a bug](https://github.com/gilbo123/LMCorral/issues/new) ·
+[Request a feature](https://github.com/gilbo123/LMCorral/issues/new) ·
+[Contributing](CONTRIBUTING.md)
 
 ### 1. Install LMCorral on your laptop or server
 
 ```bash
-git clone <repo-url> && cd LMCorral
+git clone https://github.com/gilbo123/LMCorral.git && cd LMCorral
 uv sync                    # creates .venv and installs deps (recommended)
 ```
 
@@ -212,3 +219,8 @@ Apache 2.0. See [LICENSE](LICENSE).
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and how to add probes or monitors.
+
+- [Open an issue](https://github.com/gilbo123/LMCorral/issues/new)
+- [View open issues](https://github.com/gilbo123/LMCorral/issues)
+- [Open a pull request](https://github.com/gilbo123/LMCorral/compare)
+- [View pull requests](https://github.com/gilbo123/LMCorral/pulls)

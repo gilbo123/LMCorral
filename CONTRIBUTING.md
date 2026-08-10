@@ -2,6 +2,16 @@
 
 Thank you for helping improve LMCorral. This project is Apache 2.0 — see [LICENSE](LICENSE).
 
+## Project links
+
+| | |
+|---|---|
+| Repository | https://github.com/gilbo123/LMCorral |
+| Issues | https://github.com/gilbo123/LMCorral/issues |
+| New issue | https://github.com/gilbo123/LMCorral/issues/new |
+| Pull requests | https://github.com/gilbo123/LMCorral/pulls |
+| Open a PR | https://github.com/gilbo123/LMCorral/compare |
+
 ## What you are working on
 
 LMCorral stress-tests LLM endpoints **as they stream**. Four concepts cover almost every change:
@@ -18,7 +28,7 @@ Read `lmcorral/protocol.py` for the full protocol. Probes read tunables from `se
 ## Development setup
 
 ```bash
-git clone <repo-url> && cd LMCorral
+git clone https://github.com/gilbo123/LMCorral.git && cd LMCorral
 uv sync
 cp config.yaml config.local.yaml   # optional: keep your target settings separate
 ```
@@ -191,7 +201,7 @@ Do not commit API keys. Use `${ENV_VAR}` expansion in yaml.
 
 ## Pull requests
 
-1. **Open an issue first** for large probes, new dependencies, or architectural changes — keeps scope aligned.
+1. **Open an issue first** for large probes, new dependencies, or architectural changes — [new issue](https://github.com/gilbo123/LMCorral/issues/new).
 2. **One logical change per PR** — a new probe family or a focused bugfix, not both.
 3. **Describe the failure mode** — what real deployment behaviour does a fail indicate?
 4. **Note target tested** — e.g. Ollama `qwen3.6:latest`, OpenAI `gpt-4o`, tool support yes/no.
@@ -221,4 +231,4 @@ We will review for:
 
 ## Questions
 
-Open a GitHub issue with the `question` label, or describe your probe idea and target environment before writing a large PR.
+Open a [GitHub issue](https://github.com/gilbo123/LMCorral/issues/new) (use the `question` label if available), or describe your probe idea and target environment before writing a large PR.
