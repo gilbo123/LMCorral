@@ -6,7 +6,6 @@ Thank you for helping improve LMCorral. This project is Apache 2.0 — see [LICE
 
 | | |
 |---|---|
-| Repository | https://github.com/gilbo123/LMCorral |
 | Issues | https://github.com/gilbo123/LMCorral/issues |
 | New issue | https://github.com/gilbo123/LMCorral/issues/new |
 | Pull requests | https://github.com/gilbo123/LMCorral/pulls |
