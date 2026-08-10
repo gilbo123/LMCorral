@@ -44,27 +44,27 @@ class Limits:
     """
 
     #: Stream chunks a generation may produce before it is cut off.
-    token_budget: int = 600
+    token_budget: int = 1024 #multiple paragraphs
     #: Seconds a single generation may run before it is cut off.
-    wall_clock_seconds: float = 45.0
+    wall_clock_seconds: float = 120.0
     #: Seconds of silence between chunks before the stream is judged hung.
     token_gap_seconds: float = 20.0
     #: `num_predict`/`max_tokens` for probes that want a bounded answer. Probes
     #: testing for runaway output ignore this and request no ceiling at all.
-    max_tokens: int = 700
+    max_tokens: int = 4096 #multiple paragraphs
     #: Sampling temperature for probes that do not pin their own.
-    temperature: float = 0.7
+    temperature: float = 0.9
 
     #: Shortest repeating unit, in characters, treated as a cycle.
     repetition_min_period: int = 3
     #: Longest repeating unit to search for. Raising this costs time per check.
-    repetition_max_period: int = 220
+    repetition_max_period: int = 256 #multiple sentences
     #: Consecutive identical blocks that constitute a cycle.
-    repetition_cycles: int = 4
+    repetition_cycles: int = 5
     #: Identical whole lines that constitute a cycle.
     repetition_line_repeats: int = 8
     #: Check for repetition every N chunks rather than on every one.
-    repetition_check_every: int = 16
+    repetition_check_every: int = repetition_min_period * repetition_cycles
 
     def merged(self, overrides: dict[str, Any]) -> Limits:
         """Return a copy with `overrides` applied, validating key names."""
