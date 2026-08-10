@@ -31,11 +31,10 @@ Edit `config.yaml` (`target.url` and `target.model` are required), then:
 ### 3. Run
 
 ```bash
-uv run lmcorral run          # or: lmcorral run  with the venv active
-# OR
-uv run lmcorral run --verbose          # verbose mode for debugging
-uv run lmcorral report lmcorral-report.jsonl          # generate a report from previous runs
-uv run lmcorral report --docx report.docx          # generate a report from this run in Word format
+uv run lmcorral run # with uv or `lmcorral run` with the venv active
+
+# ssrf only,verbose mode for debugging, and generate a report in Word format
+uv run lmcorral run --probe ssrf --verbose --docx report.docx
 ```
 
 ## What it is
