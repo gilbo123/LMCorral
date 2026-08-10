@@ -228,3 +228,7 @@ __marimo__/
 # apple
 .DS_Store
 *.DS_Store
+
+# application specific
+!docs/LMCorral-Word.png
+!docs/LMCorral-table.png
