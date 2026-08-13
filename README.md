@@ -62,7 +62,7 @@ uv run lmcorral run --verbose --probe ssrf --docx report.docx
 ### Table output example (`qwen3.6:latest` on Ollama)
 
 <!-- Image 3: table report -->
-![LMCorral table report](docs/LMCorral-Table.png)
+![LMCorral table report](docs/LMCorral_Table.png)
 
 The table title includes the model under test. Each row shows **Outcome**, **Trials
 passed** as `passed/total` (sub-prompts or turns within that probe), and **Detail**. A
