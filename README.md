@@ -27,7 +27,7 @@ pip install -e .
 
 **Release wheel (pip, no clone):** install the `.whl` from
 [GitHub Releases](https://github.com/gilbo123/LMCorral/releases), then point at your server —
-`pip install https://github.com/gilbo123/LMCorral/releases/download/v0.1.0/lmcorral-0.1.0-py3-none-any.whl && lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest`
+`pip install https://github.com/gilbo123/LMCorral/releases/download/{version}/lmcorral-{version}-py3-none-any.whl && lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest`
 (keep a `config.yaml` in the working directory, or pass `--config`).
 
 
