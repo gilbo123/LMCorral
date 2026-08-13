@@ -99,10 +99,11 @@ class StopButton(Probe):
             return self.finding(Outcome.ERROR, f"could not run the abort turn: {reason}")
         if not runaway.aborted:
             return self.finding(
-                Outcome.SKIP,
-                f"model stopped by itself after {runaway.chunks} chunks, so there was no "
-                "abort to verify",
+                Outcome.FAIL,
+                f"model stopped by itself after {runaway.chunks} chunks before the monitor "
+                "aborted — the kill switch was never exercised",
             )
+
         if self.settled_s is None:
             return self.finding(
                 Outcome.ERROR, "abort happened but settling delay was not measured"

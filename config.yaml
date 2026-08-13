@@ -27,21 +27,21 @@ target:
   read_timeout_seconds: 120.0
 
 limits:
-  token_budget: 1024             # max stream chunks before cut-off
-  wall_clock_seconds: 120.0      # max seconds per generation
+  token_budget: 8192             # max stream chunks before cut-off (run away probes)
+  wall_clock_seconds: 300.0      # max seconds per generation
   token_gap_seconds: 20.0        # max silence between chunks
-  max_tokens: 4096                # max answer length for bounded probes
-  temperature: 0.9
+  max_tokens: 4096               # max answer length for bounded probes
+  temperature: 0.7
   repetition_min_period: 3
   repetition_max_period: 256
   repetition_cycles: 5
   repetition_line_repeats: 8
-  repetition_check_every: 15
+  repetition_check_every: 256
 
 report:
   jsonl: lmcorral-report.jsonl
   docx: null                     # e.g. report.docx
-  max_transcript_chars: 4000
+  max_transcript_chars: 1_000_000
 
 probes: []                       # empty = run all; or list ids: [runaway, safety, leak]
 

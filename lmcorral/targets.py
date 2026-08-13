@@ -145,10 +145,9 @@ class OllamaTarget(Target):
                         }
 
                     view = StreamView(
-                        # Reasoning traces are where runaway loops usually live,
-                        # so monitors see them as ordinary output.
                         delta=delta or thinking,
-                        text=transcript.text or transcript.reasoning,
+                        text=transcript.text,
+                        reasoning=transcript.reasoning,
                         index=transcript.chunks,
                         elapsed_s=time.monotonic() - started,
                         tool_calls=transcript.tool_calls,
@@ -314,7 +313,8 @@ class OpenAITarget(Target):
 
                     view = StreamView(
                         delta=delta or thinking,
-                        text=transcript.text or transcript.reasoning,
+                        text=transcript.text,
+                        reasoning=transcript.reasoning,
                         index=transcript.chunks,
                         elapsed_s=time.monotonic() - started,
                         tool_calls=transcript.tool_calls,

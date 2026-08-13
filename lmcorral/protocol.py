@@ -90,14 +90,21 @@ class StreamView:
     """A monitor's read-only window onto a generation in progress."""
 
     delta: str
-    """Text that arrived in this chunk."""
+    """Text that arrived in this chunk (visible output or reasoning)."""
     text: str
-    """Everything received so far."""
+    """User-visible output accumulated so far."""
     index: int
     """Number of chunks received, a stand-in for token count."""
     elapsed_s: float
+    reasoning: str = ""
+    """Thinking trace accumulated so far, when the endpoint exposes one."""
     tool_calls: list[dict[str, Any]] = field(default_factory=list)
     done: bool = False
+
+    @property
+    def all_text(self) -> str:
+        """Visible output plus any reasoning trace."""
+        return self.text + self.reasoning
 
 
 class Monitor(ABC):
@@ -173,6 +180,7 @@ class Finding:
     duration_s: float = 0.0
     trials_passed: int = 0
     trials_total: int = 0
+    turn_closure: dict[str, str] | None = None
 
 
 # --------------------------------------------------------------------------- #

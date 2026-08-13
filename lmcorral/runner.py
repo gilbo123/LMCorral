@@ -69,6 +69,11 @@ class Runner:
         finding = probe.judge(transcripts)
         finding.transcripts = transcripts
         finding.duration_s = time.monotonic() - started
+        if "follow_up" not in type(probe).__dict__:
+            finding.turn_closure = {
+                "note": "No follow-up queries required — this probe uses scripted turn(s) only.",
+                "summary": finding.detail,
+            }
         annotate_trial_counts(finding)
         return finding
 

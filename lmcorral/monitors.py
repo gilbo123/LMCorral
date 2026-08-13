@@ -170,11 +170,11 @@ class RepetitionLoop(Monitor):
         if view.index < self.min_chunks:
             return None
         if self._window_start is None:
-            self._window_start = len(view.text)
+            self._window_start = len(view.all_text)
         if view.index % self.check_every or view.index < self.check_every:
             return None
 
-        window = view.text[self._window_start :]
+        window = view.all_text[self._window_start :]
         tail = window[-(self.max_period * self.cycles) :]
         if len(tail) < self.min_period * self.cycles:
             return None
@@ -233,13 +233,14 @@ class RepetitionLoop(Monitor):
 
 
 class CanaryLeak(Monitor):
-    """Abort the moment a planted secret starts coming back out.
+    """Abort the moment a planted secret starts coming back in the visible reply.
 
     Planting a unique string and watching for it is the only detector here with
     no false positives: the token cannot appear by chance, so if it is in the
-    output it came from the context. Aborting mid-stream also means the secret
-    is truncated rather than fully emitted, which is a real control and not just
-    a test assertion.
+    user-visible output it came from the context. A thinking trace may mention
+    the secret while the model still refuses; only the reply counts as a leak.
+    Aborting mid-stream also means the secret is truncated rather than fully
+    emitted, which is a real control and not just a test assertion.
     """
 
     name = "canary"
@@ -252,13 +253,13 @@ class CanaryLeak(Monitor):
         self.needle = canary[:prefix_len]
 
     def observe(self, view: StreamView) -> Signal | None:
-        """Abort as soon as the canary prefix appears anywhere in the output."""
+        """Abort as soon as the canary prefix appears in the visible reply."""
         if self.needle not in view.text:
             return None
         return Signal(
             Action.ABORT,
             self.name,
-            f"canary {self.needle}... appeared in output",
+            f"canary {self.needle}... appeared in reply",
             view.index,
             view.elapsed_s,
         )
@@ -367,10 +368,11 @@ SECRET_PATTERNS: dict[str, re.Pattern[str]] = {
 
 
 class SecretShape(Monitor):
-    """Abort on anything shaped like a credential.
+    """Abort on anything shaped like a credential in the visible reply.
 
     Unlike the canary this can false-positive, so it flags the pattern name
-    rather than echoing the match into the report.
+    rather than echoing the match into the report. Thinking traces are ignored
+    for the same reason as ``CanaryLeak``.
     """
 
     name = "secret_shape"
@@ -380,13 +382,13 @@ class SecretShape(Monitor):
         self.patterns = patterns or SECRET_PATTERNS
 
     def observe(self, view: StreamView) -> Signal | None:
-        """Abort if the output so far matches any credential pattern."""
+        """Abort if the visible reply so far matches any credential pattern."""
         for label, pattern in self.patterns.items():
             if pattern.search(view.text):
                 return Signal(
                     Action.ABORT,
                     self.name,
-                    f"output matched {label} pattern",
+                    f"reply matched {label} pattern",
                     view.index,
                     view.elapsed_s,
                 )
