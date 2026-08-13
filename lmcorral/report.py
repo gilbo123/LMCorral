@@ -280,7 +280,7 @@ def print_summary(findings: list[Finding], *, model: str = "") -> None:
     table = Table(title=title, show_lines=False)
     table.add_column("Outcome", width=8)
     table.add_column("Probe")
-    table.add_column("Trials", width=8, justify="right")
+    table.add_column("Trials passed", width=14, justify="right")
     table.add_column("Detail", overflow="fold")
 
     for finding in findings:
