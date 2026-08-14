@@ -43,6 +43,8 @@ class Limits:
     or ``probe_limits`` when you need different budgets.
     """
 
+    # ---> pip overrides only when using LMCorral directly
+    # ---> config.yaml overrides when using LMCorral with a config file
     token_budget: int = 8192
     wall_clock_seconds: float = 300.0
     token_gap_seconds: float = 20.0
