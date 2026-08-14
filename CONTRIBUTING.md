@@ -197,7 +197,7 @@ Built-in monitors: `TokenBudget`, `WallClock`, `Stall`, `RepetitionLoop`, `Canar
 
 ## Configuration and reports
 
-- `config.yaml` (or `--config path`) with a complete **`limits`** section — no Python defaults
+- `config.yaml` (or `--config path`) is **optional** — overrides package defaults for limits, reports, probes, and `probe_server`
 - **Target:** `--target` and `--model` on the CLI, or `target.url` / `target.model` in config (CLI overrides)
 - **`probe_server.port`:** required for asset-backed runaway probes (`runaway.circular_brief`, `runaway.forbidden_resolution`)
 - Per-probe overrides: `probe_limits.<probe_id>`
