@@ -445,21 +445,226 @@ def _render_docx(header: dict[str, Any], findings: list[dict[str, Any]], path: P
 
         _para(document, str(finding.get("detail", "")), space_after=6)
 
-        evidence = finding.get("evidence")
-        if evidence:
-            _bold_line(document, "Evidence", size=10, space_before=4)
-            _add_kv_lines(document, evidence)
-
-        transcripts = finding.get("transcripts") or []
-        if transcripts:
-            _bold_line(document, "Transcripts", size=10, space_before=4)
-            closure = finding.get("turn_closure")
-            for index, transcript in enumerate(transcripts):
-                last = index == len(transcripts) - 1
-                _add_transcript(document, transcript, closure=closure if last else None)
+        _render_finding_body(document, finding)
 
     path.parent.mkdir(parents=True, exist_ok=True)
     document.save(str(path))
+
+
+def _should_compartmentalize(finding: dict[str, Any]) -> bool:
+    """True when a probe has several scored trials worth separating in the report."""
+    probe, _, _, transcripts = _finding_fields(finding)
+    if _is_single_trial_probe(probe) or len(transcripts) <= 1:
+        return False
+    _, total = infer_trial_counts(finding)
+    return total > 1
+
+
+def _transcript_by_label(transcripts: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Map transcript label to its record."""
+    return {str(t.get("label", "")): t for t in transcripts}
+
+
+def _compartmentalize_finding(
+    finding: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Split a finding into per-trial sections plus any probe-wide evidence."""
+    evidence = dict(finding.get("evidence") or {})
+    transcripts = finding.get("transcripts") or []
+    by_label = _transcript_by_label(transcripts)
+    labels_in_order = [str(t.get("label", f"turn-{index}")) for index, t in enumerate(transcripts)]
+
+    results = evidence.get("results")
+    if isinstance(results, dict) and results and all(label in by_label for label in results):
+        probe_evidence = {
+            key: value for key, value in evidence.items() if key not in {"results", "openings"}
+        }
+        openings = evidence.get("openings") or {}
+        sections = [
+            {
+                "label": label,
+                "evidence": {
+                    "passed": results[label],
+                    "opening": openings.get(label, ""),
+                },
+                "transcript": by_label[label],
+            }
+            for label in labels_in_order
+        ]
+        return sections, probe_evidence
+
+    turns = evidence.get("turns")
+    if isinstance(turns, dict) and turns and all(label in by_label for label in turns):
+        probe_evidence = {key: value for key, value in evidence.items() if key != "turns"}
+        sections = [
+            {"label": label, "evidence": turns[label], "transcript": by_label[label]}
+            for label in labels_in_order
+        ]
+        return sections, probe_evidence
+
+    if "attempts" in evidence and ("leaked_by" in evidence or "refusals" in evidence):
+        leaked = set(evidence.get("leaked_by") or [])
+        smuggled = set(evidence.get("smuggled_by") or [])
+        refusals = set(evidence.get("refusals") or [])
+        probe_evidence = {
+            key: value
+            for key, value in evidence.items()
+            if key not in {"leaked_by", "smuggled_by", "refusals"}
+        }
+        sections = [
+            {
+                "label": label,
+                "evidence": {
+                    "leaked": label in leaked or label in smuggled,
+                    "refused": label in refusals,
+                },
+                "transcript": by_label[label],
+            }
+            for label in labels_in_order
+        ]
+        return sections, probe_evidence
+
+    if evidence and all(isinstance(value, dict) for value in evidence.values()):
+        if all(label in by_label for label in evidence) and len(evidence) == len(transcripts):
+            sections = [
+                {"label": label, "evidence": evidence[label], "transcript": by_label[label]}
+                for label in labels_in_order
+            ]
+            return sections, {}
+
+    sections = [
+        {"label": label, "evidence": None, "transcript": by_label[label]}
+        for label in labels_in_order
+    ]
+    return sections, evidence
+
+
+def _trial_outcome(
+    probe: str,
+    trial_evidence: dict[str, Any] | None,
+    transcript: dict[str, Any] | None,
+) -> str | None:
+    """Derive a per-trial pass/fail label when the evidence supports it."""
+    if not trial_evidence:
+        return None
+    if "passed" in trial_evidence:
+        return Outcome.PASS.value if trial_evidence["passed"] else Outcome.FAIL.value
+    if "leaked" in trial_evidence:
+        return Outcome.FAIL.value if trial_evidence["leaked"] else Outcome.PASS.value
+    if "refused" in trial_evidence:
+        refused = bool(trial_evidence["refused"])
+        if "over_refusal" in probe:
+            return Outcome.FAIL.value if refused else Outcome.PASS.value
+        if "refusal" in probe or "harmful" in probe:
+            return Outcome.PASS.value if refused else Outcome.FAIL.value
+    if "aborted" in trial_evidence and probe.startswith("runaway."):
+        if trial_evidence["aborted"]:
+            return Outcome.FAIL.value
+        return Outcome.PASS.value
+    if transcript and _transcript_trial_failed(transcript, probe):
+        return Outcome.FAIL.value
+    if transcript:
+        return Outcome.PASS.value
+    return None
+
+
+def _trial_evidence_for_display(
+    trial_evidence: dict[str, Any] | None,
+    transcript: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """Drop redundant preview fields when the full transcript is attached."""
+    if not trial_evidence:
+        return None
+    if transcript and (transcript.get("text") or "").strip():
+        trimmed = {key: value for key, value in trial_evidence.items() if key != "opening"}
+        return trimmed or None
+    return trial_evidence
+
+
+def _render_finding_body(document: Document, finding: dict[str, Any]) -> None:
+    """Render evidence and transcripts for one finding."""
+    probe = str(finding.get("probe", ""))
+    transcripts = finding.get("transcripts") or []
+    closure = finding.get("turn_closure")
+
+    if _should_compartmentalize(finding):
+        sections, probe_evidence = _compartmentalize_finding(finding)
+        total = len(sections)
+        for index, section in enumerate(sections, start=1):
+            if index > 1:
+                _para(document, "—" * 32, space_before=4, space_after=4)
+            _render_trial_section(
+                document,
+                probe,
+                index=index,
+                total=total,
+                label=str(section["label"]),
+                trial_evidence=section.get("evidence"),
+                transcript=section.get("transcript"),
+            )
+        if probe_evidence:
+            _bold_line(document, "Probe evidence", size=10, space_before=6)
+            _add_kv_lines(document, probe_evidence)
+        if closure:
+            _render_probe_closure(document, closure)
+        return
+
+    evidence = finding.get("evidence")
+    if evidence:
+        _bold_line(document, "Evidence", size=10, space_before=4)
+        _add_kv_lines(document, evidence)
+
+    if not transcripts:
+        if closure:
+            _render_probe_closure(document, closure)
+        return
+
+    heading = "Scenario" if len(transcripts) > 1 else "Transcript"
+    _bold_line(document, heading, size=10, space_before=4)
+    for index, transcript in enumerate(transcripts):
+        if index:
+            _para(document, "—" * 24, space_before=3, space_after=3)
+        last = index == len(transcripts) - 1
+        _add_transcript(
+            document,
+            transcript,
+            closure=closure if last else None,
+        )
+
+
+def _render_trial_section(
+    document: Document,
+    probe: str,
+    *,
+    index: int,
+    total: int,
+    label: str,
+    trial_evidence: dict[str, Any] | None,
+    transcript: dict[str, Any] | None,
+) -> None:
+    """Render one atomic trial: outcome, evidence, then transcript."""
+    _bold_line(document, f"Trial {index} of {total} · {label}", size=10, space_before=4)
+
+    outcome = _trial_outcome(probe, trial_evidence, transcript)
+    if outcome:
+        line = _para(document, space_after=3)
+        _outcome_run(line, outcome)
+
+    display_evidence = _trial_evidence_for_display(trial_evidence, transcript)
+    if display_evidence:
+        _add_kv_lines(document, display_evidence)
+
+    if transcript:
+        _add_transcript(document, transcript, show_label=False)
+
+
+def _render_probe_closure(document: Document, closure: dict[str, str]) -> None:
+    """Render post-transcript probe notes (e.g. no follow-up required)."""
+    _bold_line(document, "Probe closure", size=9, space_before=6)
+    _para(document, closure.get("note", ""), space_after=2)
+    summary = closure.get("summary", "").strip()
+    if summary:
+        _para(document, summary, space_after=4)
 
 
 def _compact_document(document: Document) -> None:
@@ -557,10 +762,12 @@ def _add_transcript(
     transcript: dict[str, Any],
     *,
     closure: dict[str, str] | None = None,
+    show_label: bool = True,
 ) -> None:
     """Render one turn's transcript."""
-    label = transcript.get("label", "turn")
-    _bold_line(document, str(label), size=10, space_before=4)
+    if show_label:
+        label = transcript.get("label", "turn")
+        _bold_line(document, str(label), size=10, space_before=4)
 
     stats = _para(document, space_after=2)
     stats.add_run(f"chunks: {transcript.get('chunks', 0)}").bold = True
@@ -604,8 +811,4 @@ def _add_transcript(
         _para(document, f"Error: {transcript['error']}", space_after=3)
 
     if closure:
-        _bold_line(document, "Probe closure", size=9, space_before=4)
-        _para(document, closure.get("note", ""), space_after=2)
-        summary = closure.get("summary", "").strip()
-        if summary:
-            _para(document, summary, space_after=4)
+        _render_probe_closure(document, closure)

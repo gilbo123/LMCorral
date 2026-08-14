@@ -26,10 +26,15 @@ pip install -e .
 ```
 
 **Release wheel (pip, no clone):** install the `.whl` from
-[GitHub Releases](https://github.com/gilbo123/LMCorral/releases), then point at your server —
-1. `pip install https://github.com/gilbo123/LMCorral/releases/download/{version}/lmcorral-{version}-py3-none-any.whl`
-2. `lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest`
-3. Keep a `config.yaml` in the working directory, or pass `--config`
+[GitHub Releases](https://github.com/gilbo123/LMCorral/releases), then run:
+
+```bash
+pip install https://github.com/gilbo123/LMCorral/releases/download/v0.1.1/lmcorral-0.1.1-py3-none-any.whl
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b
+```
+
+No config file required — limits and reports use package defaults. Add an optional
+`config.yaml` when you want to tune budgets, probe filters, or report paths.
 
 
 ### 2. Point LMCorral at your model server
@@ -37,7 +42,7 @@ pip install -e .
 Pass the endpoint on the command line (works from any directory after `pip install`):
 
 ```bash
-uv run lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b
 ```
 
 Or put defaults in `config.yaml` in the directory where you run the tool:
@@ -54,13 +59,20 @@ CLI `--target` and `--model` override the config file when both are set.
 
 ```bash
 # pip install example
-lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b
 
-# Using UV to run with config.yaml for limits/reports
+# Using UV from a clone (optional config.yaml for overrides)
 uv run lmcorral run --verbose --probe ssrf --docx report.docx
+
+# Using LMCorral directly
+lmcorral run --verbose
+lmcorral report lmcorral-report.jsonl
+
+# Using LMCorral as a module
+python -m lmcorral run         # module form; works with venv active (pip or uv)
 ```
 
-### Table output example (`qwen3.6:latest` on Ollama)
+### Table output example (`qwen3.5:9b` on Ollama)
 
 <!-- Image 3: table report -->
 ![LMCorral table report](docs/LMCorral_Table.png)
@@ -80,14 +92,6 @@ the model or rebuilding your stack.
 That is restraint at the wire, not isolation of the weights. Malicious artifacts at load time are
 a different problem; this tool targets failures that show up once the endpoint is already
 answering.
-
-## Usage
-
-```bash
-lmcorral run --verbose
-lmcorral report lmcorral-report.jsonl
-python -m lmcorral run         # module form; works with venv active (pip or uv)
-```
 
 ## Run checks
 
@@ -116,13 +120,13 @@ probe_server:
   path: /canary/ssrf
 ```
 
-### Word report example (`qwen3.6:latest` on Ollama)
+### Word report example (`qwen3.5:9b` on Ollama)
 
 `lmcorral-report.jsonl` (detail, including per-finding trial counts and run score) and optional
 `--docx report.docx` (same score summary in the header).
 
 <!-- Image 2: word report -->
-<img src="docs/LMCorral-Word1.png" alt="LMCorral word report 1" style="width: 45%; display: inline-block; margin: 0 1%;"><img src="docs/LMCorral-Word2.png" alt="LMCorral word report 2" style="width: 45%; display: inline-block; margin: 0 1%;"><br>
+<img src="docs/LMCorral-Word1.png" alt="LMCorral word report 1" style="width: 47%; display: inline-block; margin: 0 1%;"><img src="docs/LMCorral-Word2.png" alt="LMCorral word report 2" style="width: 45%; display: inline-block; margin: 0 1%;"><br>
 
 **Use results to fix the deployment** — tighten `num_predict`, add monitors in your own gateway,
 deny-list tools, harden system prompts — so the same class of failure does not ship again. A pass
@@ -175,19 +179,21 @@ class MyProbe(Probe):
 
 ## Configuration
 
-`config.yaml` is **optional** for target settings but **required for `run`** because every
-`limits` key must come from yaml — there are **no Python defaults** in `config.py`. If you
-changed limits in `config.py` and saw no difference, that is why: only `config.yaml` applies.
+`config.yaml` is **optional**. After `pip install`, only **`--target`** and **`--model`**
+are required. Limits, report paths, probe filters, and custom probes use **package
+defaults** until you add a yaml file (in the working directory or via `--config`).
 
 **Target** (required for `run`, one of):
 
-- `--target URL` and `--model NAME` on the command line (e.g. via `pip install`)
-- `target.url` and `target.model` in `config.yaml`
+- `--target URL` and `--model NAME` on the command line
+- `target.url` and `target.model` in `config.yaml` (CLI overrides when both are set)
 
-**Limits** (required for `run`): full `limits:` block in `config.yaml` (or `--config path`).
+**Limits** (optional): override any key under `limits:` — omitted keys keep the package
+default (same values as the example below).
 
 **Probe server** (required for `runaway.circular_brief` and `runaway.forbidden_resolution`; also
-records SSRF canary hits when tools execute for real):
+records SSRF canary hits when tools execute for real). Set `probe_server.port` in yaml — default
+is off (`port: 0`) until you enable it:
 
 ```yaml
 target:
@@ -226,8 +232,8 @@ probe_server:
 custom_probes: []                # probes without Python — see below
 ```
 
-The repository ships this as `config.yaml`; edit `target.url` / `target.model` and run
-`lmcorral run`. `${VAR}` expands from the environment. Other optional CLI flags: `--probe`,
+The repository ships this as an **example** `config.yaml` for tuning; copy and edit what
+you need. `${VAR}` expands from the environment. Other optional CLI flags: `--probe`,
 `--docx`, `--out`, `--config`.
 
 ## Scope of control

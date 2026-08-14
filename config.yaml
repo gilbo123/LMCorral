@@ -1,4 +1,5 @@
 # Edit target.url and target.model, then run:  lmcorral run
+# Optional — package defaults apply without this file. CLI --target/--model override target.
 # Optional CLI flags (--probe, --docx) override non-target settings only.
 # ${VAR} is replaced from your environment (use for API keys, not literals).
 
