@@ -28,7 +28,7 @@ pip install -e .
 **Release wheel (pip, no clone):** install the `.whl` from
 [GitHub Releases](https://github.com/gilbo123/LMCorral/releases), then point at your server —
 1. `pip install https://github.com/gilbo123/LMCorral/releases/download/{version}/lmcorral-{version}-py3-none-any.whl`
-2. `lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest`
+2. `lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b`
 3. Keep a `config.yaml` in the working directory, or pass `--config`
 
 
@@ -37,7 +37,7 @@ pip install -e .
 Pass the endpoint on the command line (works from any directory after `pip install`):
 
 ```bash
-lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b
 ```
 
 Or put defaults in `config.yaml` in the directory where you run the tool:
@@ -54,7 +54,7 @@ CLI `--target` and `--model` override the config file when both are set.
 
 ```bash
 # pip install example
-lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b
 
 # Using UV to run with config.yaml for limits/reports
 uv run lmcorral run --verbose --probe ssrf --docx report.docx
@@ -67,7 +67,7 @@ lmcorral report lmcorral-report.jsonl
 python -m lmcorral run         # module form; works with venv active (pip or uv)
 ```
 
-### Table output example (`qwen3.6:latest` on Ollama)
+### Table output example (`qwen3.5:9b` on Ollama)
 
 <!-- Image 3: table report -->
 ![LMCorral table report](docs/LMCorral-Table.png)
@@ -115,7 +115,7 @@ probe_server:
   path: /canary/ssrf
 ```
 
-### Word report example (`qwen3.6:latest` on Ollama)
+### Word report example (`qwen3.5:9b` on Ollama)
 
 `lmcorral-report.jsonl` (detail, including per-finding trial counts and run score) and optional
 `--docx report.docx` (same score summary in the header).
