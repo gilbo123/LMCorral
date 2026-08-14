@@ -37,7 +37,7 @@ pip install -e .
 Pass the endpoint on the command line (works from any directory after `pip install`):
 
 ```bash
-uv run lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
+lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
 ```
 
 Or put defaults in `config.yaml` in the directory where you run the tool:
@@ -58,6 +58,13 @@ lmcorral run --target http://127.0.0.1:11434 --model qwen3.6:latest
 
 # Using UV to run with config.yaml for limits/reports
 uv run lmcorral run --verbose --probe ssrf --docx report.docx
+
+# Using LMCorral directly
+lmcorral run --verbose
+lmcorral report lmcorral-report.jsonl
+
+# Using LMCorral as a module
+python -m lmcorral run         # module form; works with venv active (pip or uv)
 ```
 
 ### Table output example (`qwen3.6:latest` on Ollama)
@@ -80,14 +87,6 @@ the model or rebuilding your stack.
 That is restraint at the wire, not isolation of the weights. Malicious artifacts at load time are
 a different problem; this tool targets failures that show up once the endpoint is already
 answering.
-
-## Usage
-
-```bash
-lmcorral run --verbose
-lmcorral report lmcorral-report.jsonl
-python -m lmcorral run         # module form; works with venv active (pip or uv)
-```
 
 ## Run checks
 
