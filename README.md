@@ -132,9 +132,6 @@ Optional human-readable exports:
 - **`--html`** — self-contained HTML (`report.html` by default; optional path: `--html path.html`).
   Sidebar, search filter, and collapsible probe/trial sections (recommended for long runs).
 
-<!-- Image 2: word report -->
-<img src="docs/LMCorral-Word1.png" alt="LMCorral word report 1" style="width: 47%; display: inline-block; margin: 0 1%;"><img src="docs/LMCorral-Word2.png" alt="LMCorral word report 2" style="width: 45%; display: inline-block; margin: 0 1%;"><br>
-
 **Use results to fix the deployment** — tighten `num_predict`, add monitors in your own gateway,
 deny-list tools, harden system prompts — so the same class of failure does not ship again. A pass
 here is not a certificate; a fail is a concrete reproducer to work from.
