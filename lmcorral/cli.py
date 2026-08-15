@@ -1,7 +1,7 @@
 """`lmcorral` command line.
 
 `run` executes probes. `probes` lists what is available. `report` converts a
-JSONL file to Word.
+JSONL file to Word or HTML.
 """
 
 from __future__ import annotations
@@ -20,12 +20,17 @@ from .report import (
     summary_counts,
     write_docx,
     write_docx_from_jsonl,
+    write_html,
+    write_html_from_jsonl,
     write_jsonl,
 )
 from .runner import Runner
 from .targets import build_target
 
 console = Console()
+
+DEFAULT_DOCX_REPORT = Path("report.docx")
+DEFAULT_HTML_REPORT = Path("report.html")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -73,7 +78,24 @@ def _build_parser() -> argparse.ArgumentParser:
         help="directory of user-written .py probe files to load; repeatable",
     )
     run_p.add_argument("--out", type=Path, help="JSONL report path (overrides config)")
-    run_p.add_argument("--docx", type=Path, help="also write a Word report to this path")
+    run_p.add_argument(
+        "--docx",
+        nargs="?",
+        const=DEFAULT_DOCX_REPORT,
+        default=None,
+        type=Path,
+        metavar="PATH",
+        help=f"also write a Word report (default path: {DEFAULT_DOCX_REPORT})",
+    )
+    run_p.add_argument(
+        "--html",
+        nargs="?",
+        const=DEFAULT_HTML_REPORT,
+        default=None,
+        type=Path,
+        metavar="PATH",
+        help=f"also write a collapsible HTML report (default path: {DEFAULT_HTML_REPORT})",
+    )
     run_p.add_argument("--verbose", action="store_true", help="print each turn and signal")
 
     probes_p = sub.add_parser("probes", help="list available probes")
@@ -86,7 +108,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--probe-dir", action="append", dest="probe_dirs", type=Path, help="load these dirs first"
     )
 
-    report_p = sub.add_parser("report", help="convert a JSONL report to Word")
+    report_p = sub.add_parser("report", help="convert a JSONL report to Word or HTML")
     report_p.add_argument(
         "jsonl",
         type=Path,
@@ -94,8 +116,21 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     report_p.add_argument(
         "--docx",
+        nargs="?",
+        const=DEFAULT_DOCX_REPORT,
+        default=None,
         type=Path,
-        help="Word output path (default: same name as the JSONL with .docx extension)",
+        metavar="PATH",
+        help=f"Word output path (default with flag alone: {DEFAULT_DOCX_REPORT})",
+    )
+    report_p.add_argument(
+        "--html",
+        nargs="?",
+        const=DEFAULT_HTML_REPORT,
+        default=None,
+        type=Path,
+        metavar="PATH",
+        help=f"HTML output path (default with flag alone: {DEFAULT_HTML_REPORT})",
     )
 
     return parser
@@ -117,6 +152,8 @@ def _load_config(args: argparse.Namespace, *, require_target: bool = False) -> C
         config.report.jsonl = args.out
     if getattr(args, "docx", None):
         config.report.docx = args.docx
+    if getattr(args, "html", None):
+        config.report.html = args.html
 
     if require_target:
         validate_target(config.target)
@@ -151,17 +188,40 @@ def _cmd_probes(args: argparse.Namespace) -> int:
 
 
 def _cmd_report(args: argparse.Namespace) -> int:
-    """Convert an existing JSONL report into a Word document."""
+    """Convert an existing JSONL report into Word and/or HTML."""
     jsonl_path = args.jsonl
-    docx_path = args.docx or jsonl_path.with_suffix(".docx")
+    wrote = False
 
-    try:
-        write_docx_from_jsonl(jsonl_path, docx_path)
-    except (FileNotFoundError, ValueError) as exc:
-        console.print(f"[red]{exc}[/red]")
+    if args.docx is not None:
+        try:
+            write_docx_from_jsonl(jsonl_path, args.docx)
+        except (FileNotFoundError, ValueError) as exc:
+            console.print(f"[red]{exc}[/red]")
+            return 2
+        console.print(f"Word report: [bold]{args.docx}[/bold]")
+        wrote = True
+    elif args.html is None:
+        docx_path = jsonl_path.with_suffix(".docx")
+        try:
+            write_docx_from_jsonl(jsonl_path, docx_path)
+        except (FileNotFoundError, ValueError) as exc:
+            console.print(f"[red]{exc}[/red]")
+            return 2
+        console.print(f"Word report: [bold]{docx_path}[/bold]")
+        wrote = True
+
+    if args.html is not None:
+        try:
+            write_html_from_jsonl(jsonl_path, args.html)
+        except (FileNotFoundError, ValueError) as exc:
+            console.print(f"[red]{exc}[/red]")
+            return 2
+        console.print(f"HTML report: [bold]{args.html}[/bold]")
+        wrote = True
+
+    if not wrote:
+        console.print("[red]Specify --docx and/or --html[/red]")
         return 2
-
-    console.print(f"Word report: [bold]{docx_path}[/bold]")
     return 0
 
 
@@ -232,6 +292,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
     if config.report.docx:
         write_docx(findings, config.report.docx, config=config, target_desc=message)
         console.print(f"Word report: [bold]{config.report.docx}[/bold]")
+    if config.report.html:
+        write_html(findings, config.report.html, config=config, target_desc=message)
+        console.print(f"HTML report: [bold]{config.report.html}[/bold]")
 
     counts = summary_counts(findings)
     return 1 if counts["fail"] else 0

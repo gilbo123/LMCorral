@@ -87,6 +87,7 @@ class ReportConfig:
 
     jsonl: Path | None = Path("lmcorral-report.jsonl")
     docx: Path | None = None
+    html: Path | None = None
     #: Cap on transcript text stored per turn, so a runaway probe does not
     #: produce a hundred-megabyte report.
     max_transcript_chars: int = 1_000_000
@@ -183,6 +184,8 @@ class Config:
             config.report.jsonl = _resolve_against(config.report.jsonl, path)
         if config.report.docx:
             config.report.docx = _resolve_against(config.report.docx, path)
+        if config.report.html:
+            config.report.html = _resolve_against(config.report.html, path)
         return config
 
 

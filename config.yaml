@@ -9,7 +9,7 @@ target:
   url: http://127.0.0.1:11434
   # server url
   # url: http://192.168.1.200:11434
-  model: "qwen3.5:9b"
+  model: "qwen3.5:2b"
 
   # --- OpenAI (OpenAI-compatible /v1 client) ---
   # url: https://api.openai.com/v1

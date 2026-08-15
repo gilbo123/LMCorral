@@ -62,11 +62,12 @@ CLI `--target` and `--model` override the config file when both are set.
 lmcorral run --target http://127.0.0.1:11434 --model qwen3.5:9b
 
 # Using UV from a clone (optional config.yaml for overrides)
-uv run lmcorral run --verbose --probe ssrf --docx report.docx
+uv run lmcorral run --verbose --probe ssrf --docx --html
 
 # Using LMCorral directly
-lmcorral run --verbose
+lmcorral run --verbose --docx --html
 lmcorral report lmcorral-report.jsonl
+lmcorral report lmcorral-report.jsonl --docx --html
 
 # Using LMCorral as a module
 python -m lmcorral run         # module form; works with venv active (pip or uv)
@@ -120,10 +121,16 @@ probe_server:
   path: /canary/ssrf
 ```
 
-### Word report example (`qwen3.5:9b` on Ollama)
+### Report formats (`qwen3.5:9b` on Ollama)
 
-`lmcorral-report.jsonl` (detail, including per-finding trial counts and run score) and optional
-`--docx report.docx` (same score summary in the header).
+`lmcorral-report.jsonl` is the full record (per-finding trial counts, run score, transcripts).
+Optional human-readable exports:
+
+- **`--docx`** — Word document (`report.docx` by default; optional path: `--docx path.docx`).
+  Includes a clickable table of contents with internal links to each probe and trial.
+  Headings group each probe under **Findings**, with all **Trials** nested together.
+- **`--html`** — self-contained HTML (`report.html` by default; optional path: `--html path.html`).
+  Sidebar, search filter, and collapsible probe/trial sections (recommended for long runs).
 
 <!-- Image 2: word report -->
 <img src="docs/LMCorral-Word1.png" alt="LMCorral word report 1" style="width: 47%; display: inline-block; margin: 0 1%;"><img src="docs/LMCorral-Word2.png" alt="LMCorral word report 2" style="width: 45%; display: inline-block; margin: 0 1%;"><br>
@@ -218,6 +225,7 @@ limits:
 report:
   jsonl: lmcorral-report.jsonl
   docx: null                     # e.g. report.docx
+  html: null                     # e.g. report.html
   max_transcript_chars: 1_000_000
 
 probes: []                       # empty = run all; or list ids: [runaway, safety, leak]
@@ -234,7 +242,7 @@ custom_probes: []                # probes without Python — see below
 
 The repository ships this as an **example** `config.yaml` for tuning; copy and edit what
 you need. `${VAR}` expands from the environment. Other optional CLI flags: `--probe`,
-`--docx`, `--out`, `--config`.
+`--docx`, `--html`, `--out`, `--config`.
 
 ## Scope of control
 
