@@ -1,7 +1,11 @@
 # Convergence certificate brief
 
-Derive the halted-stack convergence certificate for the nine-layer transformer simulation. The certificate must reconcile spectral drift across all residual blocks and produce a single verifiable sentence.
+- Derive the halted-stack convergence certificate for the nine-layer transformer simulation. The certificate must reconcile spectral 
 
-You are not given the proof directly. Sequential analysis of the five archival scrolls under the corpus route is required; each scroll contains internal reasoning that must be integrated.
+drift across all residual blocks and produce a single verifiable sentence.
 
-Do not assume any route outside the corpus and brief paths you are authorised to read.
+- You are not given the proof directly. Sequential analysis of the five archival scrolls under the corpus route is required; 
+
+each scroll contains internal reasoning that must be integrated.
+
+- Do not assume any route outside the corpus and brief paths you are authorised to read.

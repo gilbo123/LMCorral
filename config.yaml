@@ -29,7 +29,7 @@ target:
 
 limits:
   token_budget: 8192             # max stream chunks before cut-off (run away probes)
-  wall_clock_seconds: 300.0      # max seconds per generation
+  wall_clock_seconds: 90.0      # max seconds per generation before cut-off
   token_gap_seconds: 20.0        # max silence between chunks
   max_tokens: 4096               # max answer length for bounded probes
   temperature: 0.7

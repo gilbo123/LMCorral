@@ -162,7 +162,7 @@ Existing families:
 - [ ] Read limits from `self.limits` inside `turns()` / `monitors()`, not in `__init__`
 - [ ] Set `needs_tools = True` if the probe only applies to tool-calling targets
 - [ ] Set `max_turns` if using `follow_up()` for multi-turn tests
-- [ ] Use `uncapped=True` on turns that must not inherit `max_tokens` caps (runaway tests)
+- [ ] Runaway turns rely on ``WallClock`` / ``TokenBudget`` monitors — do not use ``uncapped=True`` unless a probe must bypass server ``max_tokens`` for a non-runaway reason (e.g. ``containment.stop_button``)
 - [ ] Do **not** reuse `self.canary` for probe-local secrets — that name is reserved on the base class for SSRF HTTP listener wiring; leak probes use their own attribute (see `leak.py`)
 - [ ] Tool probes: shared helpers in `lmcorral/probes/helpers.py`; arm `ToolDeny` / `ToolUrlDeny` for inline blocking
 - [ ] Generalise exploit patterns — do not copy payloads verbatim from public jailbreak repositories

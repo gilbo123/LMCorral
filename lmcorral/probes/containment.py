@@ -94,9 +94,13 @@ class StopButton(Probe):
     def judge(self, transcripts: Sequence[Transcript]) -> Finding:
         """Compare post-abort recovery against the warm baseline."""
         runaway = next((t for t in transcripts if t.label == ABORTED), None)
+        
+        # Runaway transcript is None or has an error
         if runaway is None or runaway.error:
             reason = runaway.error if runaway else "no transcript"
             return self.finding(Outcome.ERROR, f"could not run the abort turn: {reason}")
+        
+        # Runaway transcript is not aborted
         if not runaway.aborted:
             return self.finding(
                 Outcome.FAIL,
@@ -104,6 +108,7 @@ class StopButton(Probe):
                 "aborted — the kill switch was never exercised",
             )
 
+        # Settling delay is not measured
         if self.settled_s is None:
             return self.finding(
                 Outcome.ERROR, "abort happened but settling delay was not measured"
@@ -120,6 +125,7 @@ class StopButton(Probe):
             "settle_error": self.settle_error,
         }
 
+        # Settling delay is measured but has an error
         if self.settle_error:
             return self.finding(
                 Outcome.FAIL,
@@ -130,6 +136,7 @@ class StopButton(Probe):
                 evidence=evidence,
             )
 
+        # Settling delay is measured but is greater than the threshold
         if self.settled_s > threshold:
             return self.finding(
                 Outcome.FAIL,
@@ -140,6 +147,7 @@ class StopButton(Probe):
                 evidence=evidence,
             )
 
+        # Settling delay is measured and is less than the threshold
         return self.finding(
             Outcome.PASS,
             f"abort at chunk {runaway.chunks} freed the endpoint in {self.settled_s:.2f}s "

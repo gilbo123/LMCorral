@@ -195,6 +195,14 @@ def infer_trial_counts(finding: Finding | dict[str, Any]) -> tuple[int, int]:
         passed = sum(1 for ok in results.values() if ok)
         return passed, total
 
+    trials = evidence.get("trials")
+    if isinstance(trials, dict) and trials and all(
+        isinstance(record, dict) and "passed" in record for record in trials.values()
+    ):
+        total = len(trials)
+        passed = sum(1 for record in trials.values() if record.get("passed"))
+        return passed, total
+
     if "attempts" in evidence and "leaked_by" in evidence:
         total = int(evidence["attempts"])
         passed = len(evidence.get("refusals") or [])
@@ -217,7 +225,7 @@ def infer_trial_counts(finding: Finding | dict[str, Any]) -> tuple[int, int]:
             passed = sum(1 for value in evidence.values() if value.get("refused"))
         return passed, total
 
-    if outcome == Outcome.PASS.value:
+    if outcome == Outcome.PASS.value and "trials" not in evidence:
         return len(transcripts), len(transcripts)
 
     total = len(transcripts)
@@ -474,6 +482,15 @@ def _compartmentalize_finding(
     by_label = _transcript_by_label(transcripts)
     labels_in_order = [str(t.get("label", f"turn-{index}")) for index, t in enumerate(transcripts)]
 
+    trials = evidence.get("trials")
+    if isinstance(trials, dict) and trials and all(label in by_label for label in trials):
+        probe_evidence = {key: value for key, value in evidence.items() if key != "trials"}
+        sections = [
+            {"label": label, "evidence": trials[label], "transcript": by_label[label]}
+            for label in labels_in_order
+        ]
+        return sections, probe_evidence
+
     results = evidence.get("results")
     if isinstance(results, dict) and results and all(label in by_label for label in results):
         probe_evidence = {
@@ -516,7 +533,8 @@ def _compartmentalize_finding(
                 "label": label,
                 "evidence": {
                     "leaked": label in leaked or label in smuggled,
-                    "refused": label in refusals,
+                    "held": label in refusals,
+                    "visible_reply": bool((by_label[label].get("text") or "").strip()),
                 },
                 "transcript": by_label[label],
             }
@@ -545,10 +563,14 @@ def _trial_outcome(
     transcript: dict[str, Any] | None,
 ) -> str | None:
     """Derive a per-trial pass/fail label when the evidence supports it."""
-    if not trial_evidence:
-        return None
-    if "passed" in trial_evidence:
+    if trial_evidence and "passed" in trial_evidence:
         return Outcome.PASS.value if trial_evidence["passed"] else Outcome.FAIL.value
+    if not trial_evidence:
+        if transcript and _transcript_trial_failed(transcript, probe):
+            return Outcome.FAIL.value
+        if transcript:
+            return Outcome.PASS.value
+        return None
     if "leaked" in trial_evidence:
         return Outcome.FAIL.value if trial_evidence["leaked"] else Outcome.PASS.value
     if "refused" in trial_evidence:
@@ -785,10 +807,25 @@ def _add_transcript(
         )
 
     text = (transcript.get("text") or "").strip()
+    reasoning = (transcript.get("reasoning") or "").strip()
     tool_calls = transcript.get("tool_calls") or []
     if text:
         _bold_line(document, "Output", size=9, space_before=3)
         _mono_block(document, text, size=9)
+        if transcript.get("aborted") and any(
+            signal.get("monitor") == "canary" for signal in (transcript.get("signals") or [])
+        ):
+            _para(
+                document,
+                "(reply truncated when the canary prefix appeared in visible output)",
+                space_after=3,
+            )
+    elif reasoning:
+        _para(
+            document,
+            "(no visible reply — assistant content is in the thinking trace below)",
+            space_after=3,
+        )
     elif tool_calls:
         _para(
             document,
@@ -796,8 +833,9 @@ def _add_transcript(
             "and tool calls below)",
             space_after=3,
         )
+    else:
+        _para(document, "(no visible reply)", space_after=3)
 
-    reasoning = (transcript.get("reasoning") or "").strip()
     if reasoning:
         _bold_line(document, "Thinking trace", size=9, space_before=3)
         _mono_block(document, reasoning, size=8)
